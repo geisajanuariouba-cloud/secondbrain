@@ -8,23 +8,59 @@ import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { ProgressBar, ProgressRing } from "@/components/ui/progress";
 import { StudyAreaChart } from "@/components/charts/study-area-chart";
 import {
-  totals, ACTIVITIES, REVISIONS, SUBJECTS, GOALS, VESTIBULARES,
+  totals, REVISIONS, SUBJECTS, GOALS, VESTIBULARES,
   STUDY_STREAK, WATER_GLASSES, daysUntil,
 } from "@/lib/data";
 import { formatCurrency, formatHours, formatHours as fh, pct } from "@/lib/utils";
+import { DEFAULT_HABITS_BY_DAY, getTodayKey, type Habit } from "@/lib/habits";
 
 function getTodayDate() {
   return new Date().toISOString().slice(0, 10);
 }
 
+type ExtraTask = { id: string; name: string; time: string; category: string };
+
 export default function Dashboard() {
   const [waterGlasses, setWaterGlasses] = useState(0);
+  const [checked, setChecked] = useState<Set<string>>(new Set());
+  const [todayHabits, setTodayHabits] = useState<Habit[]>([]);
+  const [extraTasks, setExtraTasks] = useState<ExtraTask[]>([]);
 
   useEffect(() => {
-    const saved = localStorage.getItem(`agua-${getTodayDate()}`);
-    if (saved !== null) setWaterGlasses(parseInt(saved, 10));
+    const dayKey = getTodayKey();
+    const dateStr = getTodayDate();
+
+    // Load habits (with day-specific overrides)
+    const savedDefault = localStorage.getItem(`rotina-default-${dayKey}`);
+    const baseHabits: Habit[] = savedDefault ? JSON.parse(savedDefault) : DEFAULT_HABITS_BY_DAY[dayKey] ?? [];
+    const removedRaw = localStorage.getItem(`rotina-removed-${dayKey}`);
+    const removed: string[] = removedRaw ? JSON.parse(removedRaw) : [];
+    setTodayHabits(baseHabits.filter((h) => !removed.includes(h.id)));
+
+    // Load extras
+    const extrasRaw = localStorage.getItem(`rotina-extras-${dayKey}`);
+    if (extrasRaw) setExtraTasks(JSON.parse(extrasRaw));
+
+    // Load checked state
+    const checkedRaw = localStorage.getItem(`rotina-checked-${dayKey}`);
+    setChecked(checkedRaw ? new Set(JSON.parse(checkedRaw)) : new Set());
+
+    // Load water
+    const savedWater = localStorage.getItem(`agua-${dateStr}`);
+    if (savedWater !== null) setWaterGlasses(parseInt(savedWater, 10));
     else setWaterGlasses(WATER_GLASSES.current);
   }, []);
+
+  const toggleHabit = (id: string) => {
+    const dayKey = getTodayKey();
+    setChecked((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      localStorage.setItem(`rotina-checked-${dayKey}`, JSON.stringify([...next]));
+      return next;
+    });
+  };
 
   const addWaterGlass = () => {
     setWaterGlasses((prev) => {
@@ -33,10 +69,15 @@ export default function Dashboard() {
       return next;
     });
   };
+
+  const allItems = [
+    ...todayHabits.map((h) => ({ id: h.id, name: h.name, time: h.time, category: h.category })),
+    ...extraTasks,
+  ].sort((a, b) => a.time.localeCompare(b.time));
+
   const nextVest = [...VESTIBULARES].sort((a, b) => daysUntil(a.date) - daysUntil(b.date))[0];
   const topSubjects = [...SUBJECTS].sort((a, b) => b.questions - a.questions).slice(0, 6);
-  const todayActivities = ACTIVITIES;
-  const doneCount = todayActivities.filter((a) => a.done).length;
+  const doneCount = allItems.filter((a) => checked.has(a.id)).length;
 
   return (
     <div className="mx-auto max-w-7xl space-y-7">
@@ -66,28 +107,35 @@ export default function Dashboard() {
                 </Link>
               }
             >
-              Rotina de hoje · {doneCount}/{todayActivities.length}
+              Rotina de hoje · {doneCount}/{allItems.length}
             </SectionTitle>
             <div className="space-y-2">
-              {todayActivities.map((a) => (
-                <div
-                  key={a.id}
-                  className="flex items-center gap-3 rounded-xl border border-border bg-surface-2/50 px-3 py-2.5 transition-colors hover:bg-surface-hover"
-                >
-                  <div
-                    className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 text-[10px] ${
-                      a.done ? "border-success bg-success text-white" : "border-border-strong text-transparent"
-                    }`}
+              {allItems.length === 0 && (
+                <p className="py-4 text-center text-sm text-text-muted">Nenhuma tarefa para hoje</p>
+              )}
+              {allItems.map((a) => {
+                const done = checked.has(a.id);
+                return (
+                  <button
+                    key={a.id}
+                    onClick={() => toggleHabit(a.id)}
+                    className="flex w-full items-center gap-3 rounded-xl border border-border bg-surface-2/50 px-3 py-2.5 text-left transition-colors hover:bg-surface-hover"
                   >
-                    ✓
-                  </div>
-                  <span className="w-12 shrink-0 text-xs font-semibold text-text-muted">{a.time}</span>
-                  <span className={`flex-1 text-sm ${a.done ? "text-text-muted line-through" : "font-medium"}`}>
-                    {a.name}
-                  </span>
-                  <Badge color="var(--c-lilac)">{a.category}</Badge>
-                </div>
-              ))}
+                    <div
+                      className={`grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 text-[10px] transition-colors ${
+                        done ? "border-success bg-success text-white" : "border-border-strong text-transparent"
+                      }`}
+                    >
+                      ✓
+                    </div>
+                    <span className="w-12 shrink-0 text-xs font-semibold text-text-muted">{a.time}</span>
+                    <span className={`flex-1 text-sm ${done ? "text-text-muted line-through" : "font-medium"}`}>
+                      {a.name}
+                    </span>
+                    <Badge color="var(--c-lilac)">{a.category}</Badge>
+                  </button>
+                );
+              })}
             </div>
           </Card>
 
