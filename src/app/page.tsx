@@ -25,6 +25,9 @@ export default function Dashboard() {
   const [checked, setChecked] = useState<Set<string>>(new Set());
   const [todayHabits, setTodayHabits] = useState<Habit[]>([]);
   const [extraTasks, setExtraTasks] = useState<ExtraTask[]>([]);
+  // nextVest computed client-side to avoid SSR/client timezone mismatch
+  const [nextVest, setNextVest] = useState(VESTIBULARES[0]);
+  const [vestCountdowns, setVestCountdowns] = useState<Record<string, number>>({});
 
   useEffect(() => {
     const dayKey = getTodayKey();
@@ -41,14 +44,26 @@ export default function Dashboard() {
     const extrasRaw = localStorage.getItem(`rotina-extras-${dayKey}`);
     if (extrasRaw) setExtraTasks(JSON.parse(extrasRaw));
 
-    // Load checked state
+    // Load checked state (guard against non-array stored values)
     const checkedRaw = localStorage.getItem(`rotina-checked-${dayKey}`);
-    setChecked(checkedRaw ? new Set(JSON.parse(checkedRaw)) : new Set());
+    if (checkedRaw) {
+      try {
+        const parsed = JSON.parse(checkedRaw);
+        setChecked(new Set(Array.isArray(parsed) ? parsed : Object.keys(parsed).filter((k) => parsed[k])));
+      } catch { /* ignore */ }
+    }
 
     // Load water
     const savedWater = localStorage.getItem(`agua-${dateStr}`);
     if (savedWater !== null) setWaterGlasses(parseInt(savedWater, 10));
     else setWaterGlasses(WATER_GLASSES.current);
+
+    // Compute date-dependent vestibular data client-side only
+    const sorted = [...VESTIBULARES].sort((a, b) => daysUntil(a.date) - daysUntil(b.date));
+    setNextVest(sorted[0]);
+    const counts: Record<string, number> = {};
+    VESTIBULARES.forEach((v) => { counts[v.id] = daysUntil(v.date); });
+    setVestCountdowns(counts);
   }, []);
 
   const toggleHabit = (id: string) => {
@@ -75,7 +90,6 @@ export default function Dashboard() {
     ...extraTasks,
   ].sort((a, b) => a.time.localeCompare(b.time));
 
-  const nextVest = [...VESTIBULARES].sort((a, b) => daysUntil(a.date) - daysUntil(b.date))[0];
   const topSubjects = [...SUBJECTS].sort((a, b) => b.questions - a.questions).slice(0, 6);
   const doneCount = allItems.filter((a) => checked.has(a.id)).length;
 
@@ -192,10 +206,10 @@ export default function Dashboard() {
                 <CalendarClock size={28} />
               </div>
               <div>
-                <p className="text-2xl font-extrabold">{daysUntil(nextVest.date)} dias</p>
+                <p className="text-2xl font-extrabold">{vestCountdowns[nextVest.id] ?? "—"} dias</p>
                 <p className="text-sm font-semibold">{nextVest.name}</p>
-                <p className="text-xs text-text-muted">
-                  {new Date(nextVest.date).toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}
+                <p className="text-xs text-text-muted" suppressHydrationWarning>
+                  {new Date(nextVest.date + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "long" })}
                 </p>
               </div>
             </div>
@@ -203,7 +217,7 @@ export default function Dashboard() {
               {VESTIBULARES.slice(1).map((v) => (
                 <div key={v.id} className="flex items-center justify-between text-xs">
                   <span className="text-text-secondary">{v.name}</span>
-                  <span className="font-semibold text-text-muted">{daysUntil(v.date)}d</span>
+                  <span className="font-semibold text-text-muted">{vestCountdowns[v.id] ?? "—"}d</span>
                 </div>
               ))}
             </div>
