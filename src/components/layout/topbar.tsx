@@ -12,14 +12,20 @@ export function Topbar() {
   const [showNotifs, setShowNotifs] = useState(false);
   const [showUser, setShowUser] = useState(false);
   const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [dateLabel, setDateLabel] = useState("");
+  const [greetingText, setGreetingText] = useState("Olá");
   const router = useRouter();
   const supabase = createClient();
-  const today = new Date();
-  const dateLabel = today.toLocaleDateString("pt-BR", {
-    weekday: "long",
-    day: "numeric",
-    month: "long",
-  });
+
+  useEffect(() => {
+    const today = new Date();
+    setDateLabel(today.toLocaleDateString("pt-BR", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+    }));
+    setGreetingText(greeting(today));
+  }, []);
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setUser(data.user));
@@ -41,10 +47,10 @@ export function Topbar() {
   return (
     <header className="sticky top-0 z-20 flex h-16 items-center gap-4 border-b border-border bg-bg/70 px-5 backdrop-blur-xl lg:px-8">
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-bold leading-tight">
-          {greeting(today)}, {displayName} 👋
+        <p className="truncate text-sm font-bold leading-tight" suppressHydrationWarning>
+          {greetingText}, {displayName} 👋
         </p>
-        <p className="truncate text-xs capitalize text-text-muted">{dateLabel}</p>
+        <p className="truncate text-xs capitalize text-text-muted" suppressHydrationWarning>{dateLabel}</p>
       </div>
 
       <button className="hidden items-center gap-2 rounded-xl border border-border bg-surface px-3 py-2 text-sm text-text-muted transition-colors hover:bg-surface-hover md:flex">

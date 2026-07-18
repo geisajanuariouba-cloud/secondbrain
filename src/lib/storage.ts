@@ -5,10 +5,8 @@
 
 import { createClient } from "@/lib/supabase/client";
 
-const supabase = createClient();
-
 async function getUserId(): Promise<string | null> {
-  const { data } = await supabase.auth.getUser();
+  const { data } = await createClient().auth.getUser();
   return data.user?.id ?? null;
 }
 
@@ -16,6 +14,7 @@ export async function storageGet(key: string): Promise<string | null> {
   const userId = await getUserId();
   if (!userId) return localStorage.getItem(key);
 
+  const supabase = createClient();
   const { data, error } = await supabase
     .from("user_data")
     .select("value")
@@ -24,7 +23,6 @@ export async function storageGet(key: string): Promise<string | null> {
     .maybeSingle();
 
   if (error || !data) return null;
-  // value is stored as jsonb; wrap strings in quotes when saving, so unwrap here
   const v = data.value;
   if (typeof v === "string") return v;
   return JSON.stringify(v);
@@ -34,10 +32,10 @@ export async function storageSet(key: string, value: string): Promise<void> {
   const userId = await getUserId();
   if (!userId) { localStorage.setItem(key, value); return; }
 
-  // Parse value to store as jsonb (keeps numbers/arrays/objects native)
   let jsonValue: unknown;
   try { jsonValue = JSON.parse(value); } catch { jsonValue = value; }
 
+  const supabase = createClient();
   await supabase.from("user_data").upsert(
     { user_id: userId, key, value: jsonValue, updated_at: new Date().toISOString() },
     { onConflict: "user_id,key" }
@@ -47,7 +45,7 @@ export async function storageSet(key: string, value: string): Promise<void> {
 export async function storageRemove(key: string): Promise<void> {
   const userId = await getUserId();
   if (!userId) { localStorage.removeItem(key); return; }
-  await supabase.from("user_data").delete().eq("user_id", userId).eq("key", key);
+  await createClient().from("user_data").delete().eq("user_id", userId).eq("key", key);
 }
 
 /**
@@ -71,6 +69,7 @@ export async function migrateLocalStorageToSupabase(): Promise<void> {
     entries.push({ user_id: userId, key, value: jsonValue, updated_at: new Date().toISOString() });
   }
 
+  const supabase = createClient();
   if (entries.length > 0) {
     await supabase.from("user_data").upsert(entries, { onConflict: "user_id,key", ignoreDuplicates: true });
   }
