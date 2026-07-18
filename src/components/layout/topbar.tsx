@@ -96,10 +96,16 @@ export function Topbar() {
               <p className="truncate text-xs text-text-muted">{user?.email ?? ""}</p>
             </div>
             <div className="py-1">
-              <button className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-hover hover:text-text">
+              <button
+                onClick={() => { setShowUser(false); router.push("/perfil"); }}
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-hover hover:text-text"
+              >
                 <User size={15} /> Perfil
               </button>
-              <button className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-hover hover:text-text">
+              <button
+                onClick={() => { setShowUser(false); router.push("/configuracoes"); }}
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-sm text-text-secondary transition-colors hover:bg-surface-hover hover:text-text"
+              >
                 <Settings size={15} /> Configurações
               </button>
               <div className="mx-3 my-1 border-t border-border" />
