@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy, ChevronDown, ChevronUp, BookOpen, Star, Filter,
-  Plus, Pencil, Trash2, X, Save, CalendarDays, Layers,
+  Plus, Pencil, Trash2, X, Save, CalendarDays, Layers, FileText, Loader2,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
@@ -127,6 +127,8 @@ export default function VestibularesPage() {
   const [form, setForm] = useState<Omit<VestibularEntry, "id">>(emptyForm());
   const [filterSubject, setFilterSubject] = useState("Todos");
   const [showOnlySelected, setShowOnlySelected] = useState(true);
+  const [pdfLoading, setPdfLoading] = useState(false);
+  const pdfInputRef = useRef<HTMLInputElement>(null);
 
   // Load from localStorage
   useEffect(() => {
@@ -188,6 +190,25 @@ export default function VestibularesPage() {
       ...p,
       subjects: p.subjects.includes(s) ? p.subjects.filter((x) => x !== s) : [...p.subjects, s],
     }));
+
+  const handlePdfUpload = async (file: File) => {
+    setPdfLoading(true);
+    try {
+      const fd = new FormData();
+      fd.append("pdf", file);
+      const res = await fetch("/api/vestibulares/analyze-pdf", { method: "POST", body: fd });
+      const data = await res.json();
+      if (data.content) {
+        setForm((p) => ({ ...p, programmaticContent: data.content }));
+      } else {
+        alert(data.error ?? "Erro ao analisar o PDF.");
+      }
+    } catch {
+      alert("Falha na conexão. Tente novamente.");
+    } finally {
+      setPdfLoading(false);
+    }
+  };
 
   const saveForm = () => {
     const firstDate = form.phaseEntries[0]?.date ?? "";
@@ -371,11 +392,36 @@ export default function VestibularesPage() {
 
         {/* Conteúdo programático geral */}
         <div>
-          <label className="mb-1 block text-xs text-text-muted">Conteúdo programático geral (opcional)</label>
+          <div className="mb-1 flex items-center justify-between">
+            <label className="text-xs text-text-muted">Conteúdo programático geral (opcional)</label>
+            <button
+              type="button"
+              onClick={() => pdfInputRef.current?.click()}
+              disabled={pdfLoading}
+              className="flex items-center gap-1.5 rounded-lg border border-c-amber/50 bg-c-amber/10 px-3 py-1 text-xs font-semibold text-c-amber transition-all hover:bg-c-amber/20 disabled:opacity-60"
+            >
+              {pdfLoading ? (
+                <><Loader2 size={13} className="animate-spin" /> Analisando...</>
+              ) : (
+                <><FileText size={13} /> Analisar PDF</>
+              )}
+            </button>
+            <input
+              ref={pdfInputRef}
+              type="file"
+              accept=".pdf,application/pdf"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) handlePdfUpload(f);
+                e.target.value = "";
+              }}
+            />
+          </div>
           <textarea value={form.programmaticContent}
             onChange={(e) => setForm((p) => ({ ...p, programmaticContent: e.target.value }))}
-            placeholder="Cole o edital ou descreva os tópicos cobrados no geral..."
-            rows={4}
+            placeholder="Cole o edital ou clique em 'Analisar PDF' para extrair automaticamente os tópicos..."
+            rows={5}
             className="w-full resize-none rounded-xl border border-border bg-surface px-3 py-2.5 text-sm outline-none focus:border-c-amber/60" />
         </div>
 
