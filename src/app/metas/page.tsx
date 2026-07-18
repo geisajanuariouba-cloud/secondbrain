@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import { Target, Plus, X, Check } from "lucide-react";
+import { Target, Plus, X, Check, Trash2 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress";
@@ -77,6 +77,10 @@ export default function MetasPage() {
     setGoals((prev) => [...prev, newGoal]);
     setForm({ name: "", category: "Estudos", target: "", current: "", deadline: "", emoji: "" });
     setShowForm(false);
+  }
+
+  function handleDeleteGoal(id: string) {
+    setGoals((prev) => prev.filter((g) => g.id !== id));
   }
 
   function handleUpdateCurrent(id: string) {
@@ -216,10 +220,19 @@ export default function MetasPage() {
               transition={{ delay: i * 0.06 }}
             >
               <Card interactive>
-                <div className="flex items-center gap-5">
+                <div className="flex items-start gap-5">
                   <ProgressRing value={p} color={color} size={84} stroke={8} />
                   <div className="min-w-0 flex-1">
-                    <Badge color={color}>{g.category}</Badge>
+                    <div className="flex items-center justify-between gap-2">
+                      <Badge color={color}>{g.category}</Badge>
+                      <button
+                        onClick={() => handleDeleteGoal(g.id)}
+                        className="text-text-muted transition-colors hover:text-danger"
+                        title="Remover meta"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
                     <p className="mt-2 text-base font-bold leading-tight">
                       {g.emoji && <span className="mr-1">{g.emoji}</span>}
                       {g.name}

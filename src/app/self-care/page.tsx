@@ -17,7 +17,12 @@ const MOOD_LABELS: Record<number, { label: string; emoji: string; color: string 
 
 const DAY_LABELS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
+function getTodayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
 export default function SelfCarePage() {
+  const today = getTodayISO();
   const [morning, setMorning] = useState<SkinStep[]>(SKINCARE_MORNING);
   const [evening, setEvening] = useState<SkinStep[]>(SKINCARE_EVENING);
   const [moodLog, setMoodLog] = useState<MoodEntry[]>(MOOD_LOG);
@@ -33,23 +38,23 @@ export default function SelfCarePage() {
   const setTodayMood = (mood: 1 | 2 | 3 | 4 | 5) => {
     setMoodLog((prev) => {
       const last = prev[prev.length - 1];
-      if (last?.date === "2026-06-28") {
+      if (last?.date === today) {
         return [...prev.slice(0, -1), { ...last, mood }];
       }
-      return [...prev, { date: "2026-06-28", mood }];
+      return [...prev, { date: today, mood }];
     });
   };
 
   const addGratitude = () => {
     if (!newGratitude.trim()) return;
     setGratitude((prev) => {
-      const entry = prev.find((e) => e.date === "2026-06-28");
+      const entry = prev.find((e) => e.date === today);
       if (entry) {
         return prev.map((e) =>
-          e.date === "2026-06-28" ? { ...e, items: [...e.items, newGratitude.trim()] } : e
+          e.date === today ? { ...e, items: [...e.items, newGratitude.trim()] } : e
         );
       }
-      return [{ date: "2026-06-28", items: [newGratitude.trim()] }, ...prev];
+      return [{ date: today, items: [newGratitude.trim()] }, ...prev];
     });
     setNewGratitude("");
     setAddingGratitude(false);
@@ -58,7 +63,7 @@ export default function SelfCarePage() {
   const todayMood = moodLog[moodLog.length - 1]?.mood ?? 3;
   const morningDone = morning.filter((s) => s.done).length;
   const eveningDone = evening.filter((s) => s.done).length;
-  const todayGratitude = gratitude.find((e) => e.date === "2026-06-28");
+  const todayGratitude = gratitude.find((e) => e.date === today);
 
   return (
     <div className="mx-auto max-w-5xl space-y-7">

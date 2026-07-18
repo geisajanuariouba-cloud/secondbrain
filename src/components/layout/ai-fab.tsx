@@ -167,6 +167,7 @@ export function AIFab() {
                 style={{ overflowY: "auto" }}
               />
               <button
+                onClick={() => alert("Entrada por voz em breve!")}
                 className="grid h-10 w-10 shrink-0 place-items-center rounded-xl text-text-muted transition-colors hover:text-text"
                 title="Voz (em breve)"
               >

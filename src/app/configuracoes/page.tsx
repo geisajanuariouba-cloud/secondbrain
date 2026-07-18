@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
+import { createClient } from "@/lib/supabase/client";
 
 type Tab = "geral" | "notificacoes" | "automacoes" | "dados";
 
@@ -49,6 +50,8 @@ const DEFAULT_BANK_PATTERNS = [
 export default function ConfiguracoesPage() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
+  const [userName, setUserName] = useState("");
+  const [userEmail, setUserEmail] = useState("");
   const [activeTab, setActiveTab] = useState<Tab>("geral");
   const [status, setStatus] = useState<IntegrationStatus | null>(null);
   const [loadingStatus, setLoadingStatus] = useState(false);
@@ -68,7 +71,15 @@ export default function ConfiguracoesPage() {
   const [editingKindle, setEditingKindle] = useState(false);
   const [copiedEnv, setCopiedEnv] = useState<string | null>(null);
 
-  useEffect(() => { setMounted(true); }, []);
+  useEffect(() => {
+    setMounted(true);
+    createClient().auth.getUser().then(({ data }) => {
+      if (data.user) {
+        setUserEmail(data.user.email ?? "");
+        setUserName(data.user.user_metadata?.name ?? data.user.email?.split("@")[0] ?? "Livia");
+      }
+    });
+  }, []);
 
   // Carregar status das integrações quando abrir aba Automações
   useEffect(() => {
@@ -225,10 +236,13 @@ export default function ConfiguracoesPage() {
             <Card>
               <SectionTitle><span className="flex items-center gap-2"><User size={16} /> Conta</span></SectionTitle>
               <div className="mt-3 space-y-2">
-                <Row label="Nome" value="Livia Januario" />
-                <Row label="E-mail" value="sliviaaz.uba@gmail.com" />
+                <Row label="Nome" value={userName || "—"} />
+                <Row label="E-mail" value={userEmail || "—"} />
                 <Row label="Foco" value="Medicina · Vestibular 2026" />
                 <Row label="Plano" value="Personal · Ativo" highlight />
+              </div>
+              <div className="mt-3">
+                <a href="/perfil" className="text-xs font-semibold text-primary hover:underline">Editar perfil →</a>
               </div>
             </Card>
           </motion.div>
