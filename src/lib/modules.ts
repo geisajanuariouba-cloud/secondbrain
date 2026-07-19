@@ -17,6 +17,7 @@ import {
   HeartPulse,
   Bot,
   Target,
+  KeyRound,
   type LucideIcon,
 } from "lucide-react";
 
@@ -53,5 +54,6 @@ export const MODULES: ModuleDef[] = [
   { key: "metricas", label: "Métricas", href: "/metricas", icon: BarChart3, available: true, accent: "var(--primary)", groupLabel: "INSIGHTS" },
   { key: "consultas", label: "Consultas IA", href: "/consultas", icon: Bot, available: true, accent: "var(--secondary)" },
   // ── SISTEMA ──
-  { key: "config", label: "Configurações", href: "/configuracoes", icon: Settings, available: true, accent: "var(--text-secondary)", groupLabel: "SISTEMA" },
+  { key: "senhas", label: "Senhas & Contas", href: "/senhas", icon: KeyRound, available: true, accent: "var(--c-amber)", groupLabel: "SISTEMA" },
+  { key: "config", label: "Configurações", href: "/configuracoes", icon: Settings, available: true, accent: "var(--text-secondary)" },
 ];
