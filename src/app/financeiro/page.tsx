@@ -4,17 +4,17 @@ import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   DollarSign, TrendingUp, TrendingDown, PiggyBank, Check, Clock,
-  RotateCcw, PieChart, Plus, X, Pencil,
+  RotateCcw, PieChart, Plus, X, Pencil, Landmark, AlertCircle,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress";
 import {
-  TRANSACTIONS, BUDGET_CATEGORIES, RECURRING_EXPENSES,
-  type RecurringExpense, type Transaction,
+  TRANSACTIONS, BUDGET_CATEGORIES, RECURRING_EXPENSES, DEFAULT_ACCOUNTS,
+  type RecurringExpense, type Transaction, type BankAccount,
 } from "@/lib/data";
 
-const TABS = ["Visão Geral", "Recorrentes", "Orçamento"] as const;
+const TABS = ["Visão Geral", "Contas", "Recorrentes", "Orçamento"] as const;
 type Tab = typeof TABS[number];
 
 const DEFAULT_INCOME = 1500;
@@ -40,13 +40,15 @@ function todayISO() {
 interface TransactionFormProps {
   onAdd: (t: Transaction) => void;
   onClose: () => void;
+  accounts: BankAccount[];
 }
-function TransactionForm({ onAdd, onClose }: TransactionFormProps) {
+function TransactionForm({ onAdd, onClose, accounts }: TransactionFormProps) {
   const [name, setName] = useState("");
   const [value, setValue] = useState("");
   const [type, setType] = useState<Transaction["type"]>("Gasto variável");
   const [category, setCategory] = useState(TRANSACTION_CATEGORIES[0]);
   const [date, setDate] = useState(todayISO());
+  const [account, setAccount] = useState(accounts[0]?.id ?? "");
 
   const inputClass =
     "w-full rounded-xl border border-border bg-surface-2 px-3 py-2 text-sm outline-none focus:border-primary transition-colors";
@@ -62,6 +64,7 @@ function TransactionForm({ onAdd, onClose }: TransactionFormProps) {
       type,
       category: type === "Receita" ? undefined : category,
       date,
+      account: account || undefined,
     };
     onAdd(newT);
   };
@@ -110,6 +113,15 @@ function TransactionForm({ onAdd, onClose }: TransactionFormProps) {
             </select>
           </div>
         )}
+        {accounts.length > 0 && (
+          <div>
+            <label className={labelClass}>Conta</label>
+            <select className={inputClass} value={account} onChange={e => setAccount(e.target.value)}>
+              <option value="">Sem conta específica</option>
+              {accounts.map(a => <option key={a.id} value={a.id}>{a.emoji} {a.name}</option>)}
+            </select>
+          </div>
+        )}
         <div className="flex gap-2 pt-1">
           <button
             type="submit"
@@ -131,10 +143,13 @@ function TransactionForm({ onAdd, onClose }: TransactionFormProps) {
 interface VisaoGeralProps {
   transactions: Transaction[];
   onAdd: (t: Transaction) => void;
+  onExplainPending: (id: string, explanation: string) => void;
   monthlyIncome: number;
   onIncomeChange: (v: number) => void;
+  accounts: BankAccount[];
 }
-function VisaoGeral({ transactions, onAdd, monthlyIncome, onIncomeChange }: VisaoGeralProps) {
+function VisaoGeral({ transactions, onAdd, onExplainPending, monthlyIncome, onIncomeChange, accounts }: VisaoGeralProps) {
+  const [pendingExplain, setPendingExplain] = useState<Record<string, string>>({});
   const [showForm, setShowForm] = useState(false);
   const [editingIncome, setEditingIncome] = useState(false);
   const [incomeInput, setIncomeInput] = useState(String(monthlyIncome));
@@ -160,6 +175,8 @@ function VisaoGeral({ transactions, onAdd, monthlyIncome, onIncomeChange }: Visa
     setShowForm(false);
   };
 
+  const pendingList = transactions.filter((t) => t.pending);
+
   const saveIncome = () => {
     const v = parseFloat(incomeInput);
     if (!isNaN(v) && v > 0) onIncomeChange(v);
@@ -170,9 +187,58 @@ function VisaoGeral({ transactions, onAdd, monthlyIncome, onIncomeChange }: Visa
     <div className="space-y-5">
       <AnimatePresence>
         {showForm && (
-          <TransactionForm onAdd={handleAddTransaction} onClose={() => setShowForm(false)} />
+          <TransactionForm onAdd={handleAddTransaction} onClose={() => setShowForm(false)} accounts={accounts} />
         )}
       </AnimatePresence>
+
+      {/* Transações pendentes */}
+      {pendingList.length > 0 && (
+        <Card>
+          <div className="mb-3 flex items-center gap-2">
+            <AlertCircle size={15} style={{ color: "var(--c-amber)" }} />
+            <SectionTitle>Transações pendentes ({pendingList.length})</SectionTitle>
+          </div>
+          <div className="space-y-2">
+            {pendingList.map((t) => (
+              <div key={t.id} className="rounded-xl border border-c-amber/40 bg-c-amber/5 px-3 py-2.5">
+                <div className="flex items-center justify-between gap-2 mb-2">
+                  <div>
+                    <p className="text-sm font-semibold">{t.name}</p>
+                    <p className="text-xs text-text-muted">{new Date(t.date).toLocaleDateString("pt-BR")} · {formatBRL(t.value)}</p>
+                  </div>
+                  <span className="text-sm font-bold tabular-nums" style={{ color: t.type === "Receita" ? "var(--success)" : "var(--danger)" }}>
+                    {t.type === "Receita" ? "+" : "-"}{formatBRL(t.value)}
+                  </span>
+                </div>
+                <div className="flex gap-2">
+                  <input
+                    className="flex-1 rounded-lg border border-border bg-surface-2 px-2.5 py-1.5 text-xs outline-none focus:border-c-amber/60"
+                    placeholder="Do que foi essa transação?"
+                    value={pendingExplain[t.id] ?? ""}
+                    onChange={(e) => setPendingExplain((p) => ({ ...p, [t.id]: e.target.value }))}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && pendingExplain[t.id]?.trim()) {
+                        onExplainPending(t.id, pendingExplain[t.id]);
+                        setPendingExplain((p) => { const n = { ...p }; delete n[t.id]; return n; });
+                      }
+                    }}
+                  />
+                  <button
+                    onClick={() => {
+                      if (pendingExplain[t.id]?.trim()) {
+                        onExplainPending(t.id, pendingExplain[t.id]);
+                        setPendingExplain((p) => { const n = { ...p }; delete n[t.id]; return n; });
+                      }
+                    }}
+                    className="rounded-lg px-3 py-1.5 text-xs font-bold text-white"
+                    style={{ background: "var(--c-amber)" }}
+                  >OK</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </Card>
+      )}
 
       <div className="grid gap-4 sm:grid-cols-3">
         {[
@@ -278,6 +344,106 @@ function VisaoGeral({ transactions, onAdd, monthlyIncome, onIncomeChange }: Visa
           </div>
         </Card>
       )}
+    </div>
+  );
+}
+
+// ── Contas ──
+interface ContasProps {
+  accounts: BankAccount[];
+  onUpdateBalance: (id: string, balance: number) => void;
+  transactions: Transaction[];
+}
+function Contas({ accounts, onUpdateBalance, transactions }: ContasProps) {
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editVal, setEditVal] = useState("");
+
+  const totalBalance = accounts.reduce((s, a) => s + a.balance, 0);
+
+  const txByAccount = (accId: string) =>
+    transactions.filter((t) => t.account === accId).slice(0, 3);
+
+  return (
+    <div className="space-y-5">
+      <Card glow>
+        <div className="flex items-center gap-4">
+          <div className="grid h-12 w-12 place-items-center rounded-2xl" style={{ background: "color-mix(in srgb, var(--success) 15%, transparent)", color: "var(--success)" }}>
+            <Landmark size={22} />
+          </div>
+          <div>
+            <p className="text-xs text-text-muted">Saldo total em contas</p>
+            <p className="text-3xl font-extrabold tabular-nums" style={{ color: totalBalance >= 0 ? "var(--success)" : "var(--danger)" }}>
+              {formatBRL(totalBalance)}
+            </p>
+          </div>
+        </div>
+      </Card>
+
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        {accounts.map((acc) => {
+          const recentTx = txByAccount(acc.id);
+          const isEditing = editingId === acc.id;
+          return (
+            <Card key={acc.id}>
+              <div className="flex items-start justify-between mb-3">
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-xl text-lg" style={{ background: `color-mix(in srgb, ${acc.color} 15%, transparent)` }}>
+                    {acc.emoji}
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold">{acc.name}</p>
+                    <p className="text-[11px] text-text-muted">{acc.bank} · {acc.type}</p>
+                  </div>
+                </div>
+                <Badge color={acc.color}>{acc.type}</Badge>
+              </div>
+
+              {isEditing ? (
+                <div className="flex items-center gap-2 mb-3">
+                  <input
+                    autoFocus
+                    type="number"
+                    step="0.01"
+                    className="flex-1 rounded-lg border border-border bg-surface-2 px-2 py-1.5 text-sm font-bold outline-none focus:border-primary"
+                    value={editVal}
+                    onChange={(e) => setEditVal(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") { onUpdateBalance(acc.id, parseFloat(editVal) || 0); setEditingId(null); }
+                      if (e.key === "Escape") setEditingId(null);
+                    }}
+                  />
+                  <button onClick={() => { onUpdateBalance(acc.id, parseFloat(editVal) || 0); setEditingId(null); }}
+                    className="rounded-lg px-2 py-1.5 text-xs font-bold text-white" style={{ background: "var(--success)" }}>OK</button>
+                  <button onClick={() => setEditingId(null)} className="text-text-muted hover:text-text"><X size={14} /></button>
+                </div>
+              ) : (
+                <div className="flex items-center justify-between mb-3">
+                  <p className="text-2xl font-extrabold tabular-nums" style={{ color: acc.balance >= 0 ? "var(--success)" : "var(--danger)" }}>
+                    {formatBRL(acc.balance)}
+                  </p>
+                  <button onClick={() => { setEditingId(acc.id); setEditVal(String(acc.balance)); }}
+                    className="rounded-lg border border-border p-1.5 text-text-muted hover:bg-surface-hover hover:text-text transition-colors">
+                    <Pencil size={13} />
+                  </button>
+                </div>
+              )}
+
+              {recentTx.length > 0 && (
+                <div className="space-y-1 border-t border-border pt-2">
+                  {recentTx.map((t) => (
+                    <div key={t.id} className="flex items-center justify-between text-xs">
+                      <span className="truncate text-text-secondary">{t.name}</span>
+                      <span className="shrink-0 font-semibold tabular-nums ml-2" style={{ color: t.type === "Receita" ? "var(--success)" : "var(--danger)" }}>
+                        {t.type === "Receita" ? "+" : "-"}{formatBRL(t.value)}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </Card>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -436,29 +602,41 @@ export default function FinanceiroPage() {
   const [tab, setTab] = useState<Tab>("Visão Geral");
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [monthlyIncome, setMonthlyIncome] = useState(DEFAULT_INCOME);
+  const [accounts, setAccounts] = useState<BankAccount[]>(DEFAULT_ACCOUNTS);
 
   useEffect(() => {
-    // Carregar income
     const savedIncome = localStorage.getItem("financeiro-income");
-    if (savedIncome) {
-      const v = parseFloat(savedIncome);
-      if (!isNaN(v)) setMonthlyIncome(v);
-    }
-    // Carregar transações mescladas
+    if (savedIncome) { const v = parseFloat(savedIncome); if (!isNaN(v)) setMonthlyIncome(v); }
+
     const savedTx = localStorage.getItem("financeiro-transacoes");
     const localTx: Transaction[] = savedTx ? JSON.parse(savedTx) : [];
     const localIds = new Set(localTx.map((t) => t.id));
     const merged = [...TRANSACTIONS.filter((t) => !localIds.has(t.id)), ...localTx];
     setTransactions(merged);
+
+    const savedAccounts = localStorage.getItem("financeiro-contas");
+    if (savedAccounts) {
+      try { setAccounts(JSON.parse(savedAccounts)); } catch { /* ignore */ }
+    }
   }, []);
+
+  function saveTransactions(txList: Transaction[]) {
+    const mockIds = new Set(TRANSACTIONS.map((x) => x.id));
+    localStorage.setItem("financeiro-transacoes", JSON.stringify(txList.filter((x) => !mockIds.has(x.id))));
+  }
 
   const handleAddTransaction = (t: Transaction) => {
     setTransactions((prev) => {
       const next = [t, ...prev];
-      // Salvar apenas as criadas pelo usuário (não as do mock)
-      const mockIds = new Set(TRANSACTIONS.map((x) => x.id));
-      const userTx = next.filter((x) => !mockIds.has(x.id));
-      localStorage.setItem("financeiro-transacoes", JSON.stringify(userTx));
+      saveTransactions(next);
+      return next;
+    });
+  };
+
+  const handleExplainPending = (id: string, explanation: string) => {
+    setTransactions((prev) => {
+      const next = prev.map((t) => t.id === id ? { ...t, name: explanation, pending: false } : t);
+      saveTransactions(next);
       return next;
     });
   };
@@ -466,6 +644,14 @@ export default function FinanceiroPage() {
   const handleIncomeChange = (v: number) => {
     setMonthlyIncome(v);
     localStorage.setItem("financeiro-income", String(v));
+  };
+
+  const handleUpdateAccountBalance = (id: string, balance: number) => {
+    setAccounts((prev) => {
+      const next = prev.map((a) => a.id === id ? { ...a, balance } : a);
+      localStorage.setItem("financeiro-contas", JSON.stringify(next));
+      return next;
+    });
   };
 
   return (
@@ -503,8 +689,17 @@ export default function FinanceiroPage() {
             <VisaoGeral
               transactions={transactions}
               onAdd={handleAddTransaction}
+              onExplainPending={handleExplainPending}
               monthlyIncome={monthlyIncome}
               onIncomeChange={handleIncomeChange}
+              accounts={accounts}
+            />
+          )}
+          {tab === "Contas" && (
+            <Contas
+              accounts={accounts}
+              onUpdateBalance={handleUpdateAccountBalance}
+              transactions={transactions}
             />
           )}
           {tab === "Recorrentes" && <Recorrentes />}

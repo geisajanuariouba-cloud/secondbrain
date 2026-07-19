@@ -173,7 +173,28 @@ export type Transaction = {
   type: "Receita" | "Gasto fixo" | "Gasto variável" | "Reserva" | "Empréstimo(Entrada)" | "Empréstimo(Retirada)";
   category?: string;
   date: string;
+  account?: string;
+  pending?: boolean;
 };
+
+export type BankAccount = {
+  id: string;
+  name: string;
+  bank: string;
+  type: "Corrente" | "Poupança" | "Digital" | "Empresarial";
+  balance: number;
+  color: string;
+  emoji: string;
+};
+
+export const DEFAULT_ACCOUNTS: BankAccount[] = [
+  { id: "acc-inter-pessoal",  name: "Inter Pessoal",  bank: "Banco Inter", type: "Corrente",   balance: 0, color: "var(--c-amber)",  emoji: "🟠" },
+  { id: "acc-inter-poupanca", name: "Inter Poupança", bank: "Banco Inter", type: "Poupança",   balance: 0, color: "var(--c-green)",  emoji: "💚" },
+  { id: "acc-nubank",         name: "Nubank",         bank: "Nubank",      type: "Digital",    balance: 0, color: "var(--c-lilac)",  emoji: "💜" },
+  { id: "acc-kast",           name: "Kast",           bank: "Kast",        type: "Digital",    balance: 0, color: "var(--c-cyan)",   emoji: "🩵" },
+  { id: "acc-ton",            name: "Ton (Salão)",    bank: "Ton",         type: "Empresarial",balance: 0, color: "var(--c-rose)",   emoji: "🩷" },
+  { id: "acc-pagbank",        name: "PagBank",        bank: "PagBank",     type: "Digital",    balance: 0, color: "var(--secondary)",emoji: "🔵" },
+];
 
 export const TRANSACTIONS: Transaction[] = [
   { id: "f1", name: "Salão — comissão", value: 1200, type: "Receita", category: "Salão", date: "2026-06-05" },
