@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   CalendarHeart, Sunrise, Sun, Moon, Flame, CheckCircle2,
   Plus, X, Trash2, Clock, Settings, ChevronLeft, Pencil, Save,
+  BookOpen, GraduationCap, RotateCcw, Zap, ChevronRight,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
@@ -77,6 +78,49 @@ function loadRemovedIds(date: string): string[] {
   return [];
 }
 
+// ─── Study types ──────────────────────────────────────────────────────────────
+
+const STUDY_STEPS = ["Aula", "Leitura", "Exercícios", "Revisão", "Domínio"] as const;
+type StudyStep = typeof STUDY_STEPS[number];
+
+const SUBJECT_COLORS_ROTINA: Record<string, string> = {
+  Biologia: "var(--c-green)", Química: "var(--accent)", Física: "var(--c-blue)",
+  Matemática: "var(--c-pink)", Português: "var(--c-amber)", Redação: "var(--c-lilac)",
+  História: "var(--c-rose)", Geografia: "var(--success)", Literatura: "var(--secondary)",
+  Sociologia: "var(--text-muted)", Filosofia: "var(--text-muted)", Inglês: "var(--c-cyan)",
+  Atualidades: "var(--c-cyan)",
+};
+
+const SUBJECTS_LIST = Object.keys(SUBJECT_COLORS_ROTINA);
+
+type StudyTask = {
+  id: string;
+  date: string;
+  subject: string;
+  topic: string;
+  step: StudyStep;
+  done: boolean;
+  isRevision?: boolean; // true = revisão de dia anterior
+  ankiCards?: number;
+};
+
+function prevDateISO(dateStr: string): string {
+  const d = new Date(dateStr + "T12:00:00");
+  d.setDate(d.getDate() - 1);
+  return d.toISOString().slice(0, 10);
+}
+
+function loadStudyTasks(date: string): StudyTask[] {
+  try {
+    const raw = localStorage.getItem(`study-tasks-${date}`);
+    return raw ? JSON.parse(raw) : [];
+  } catch { return []; }
+}
+
+function saveStudyTasks(date: string, tasks: StudyTask[]) {
+  localStorage.setItem(`study-tasks-${date}`, JSON.stringify(tasks));
+}
+
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
 export default function RotinaPage() {
@@ -103,16 +147,21 @@ export default function RotinaPage() {
     name: "", timeOfDay: "Manhã", category: "Rotina", time: "06:00",
   });
 
+  // Study block state
+  const [studyTasks, setStudyTasks] = useState<StudyTask[]>([]);
+  const [showAddStudy, setShowAddStudy] = useState(false);
+  const [newStudy, setNewStudy] = useState({ subject: SUBJECTS_LIST[0], topic: "", step: "Aula" as StudyStep });
+
   // Load rotina state when day changes
   useEffect(() => {
     const savedChecked = localStorage.getItem(`rotina-checked-${selectedDay}`);
     setChecked(savedChecked ? JSON.parse(savedChecked) : {});
     const savedExtras = localStorage.getItem(`rotina-extras-${selectedDay}`);
     setExtras(savedExtras ? JSON.parse(savedExtras) : []);
-    // removed is per date (today only makes sense, but track per day label for planning)
     const savedRemoved = localStorage.getItem(`rotina-removed-${selectedDay}`);
     setRemoved(savedRemoved ? JSON.parse(savedRemoved) : []);
-  }, [selectedDay]);
+    setStudyTasks(loadStudyTasks(todayDate));
+  }, [selectedDay, todayDate]);
 
   useEffect(() => {
     localStorage.setItem(`rotina-checked-${selectedDay}`, JSON.stringify(checked));
@@ -165,6 +214,52 @@ export default function RotinaPage() {
   const totalDone = allDone + extrasDone;
   const totalTasks = habits.length + extras.length;
   const isToday = selectedDay === todayKey;
+
+  // ─── Study actions ────────────────────────────────────────────────────────
+
+  const addStudyTask = () => {
+    if (!newStudy.topic.trim()) return;
+    const task: StudyTask = {
+      id: `st-${Date.now()}`,
+      date: todayDate,
+      subject: newStudy.subject,
+      topic: newStudy.topic.trim(),
+      step: newStudy.step,
+      done: false,
+    };
+    const updated = [...studyTasks, task];
+    setStudyTasks(updated);
+    saveStudyTasks(todayDate, updated);
+    setNewStudy({ subject: SUBJECTS_LIST[0], topic: "", step: "Aula" });
+    setShowAddStudy(false);
+  };
+
+  const toggleStudyTask = (id: string) => {
+    const updated = studyTasks.map((t) => t.id === id ? { ...t, done: !t.done } : t);
+    setStudyTasks(updated);
+    saveStudyTasks(todayDate, updated);
+  };
+
+  const removeStudyTask = (id: string) => {
+    const updated = studyTasks.filter((t) => t.id !== id);
+    setStudyTasks(updated);
+    saveStudyTasks(todayDate, updated);
+  };
+
+  const advanceStep = (id: string) => {
+    const updated = studyTasks.map((t) => {
+      if (t.id !== id) return t;
+      const idx = STUDY_STEPS.indexOf(t.step);
+      const nextStep = STUDY_STEPS[Math.min(idx + 1, STUDY_STEPS.length - 1)];
+      return { ...t, step: nextStep };
+    });
+    setStudyTasks(updated);
+    saveStudyTasks(todayDate, updated);
+  };
+
+  const yesterdayTasks = loadStudyTasks(prevDateISO(todayDate));
+  const revisionsFromYesterday = yesterdayTasks.filter((t) => t.done);
+  const isSaturday = new Date().getDay() === 6;
 
   // ─── Config actions ────────────────────────────────────────────────────────
 
@@ -400,6 +495,183 @@ export default function RotinaPage() {
               );
             })}
           </div>
+
+          {/* ─── Bloco de Estudos do Dia ─────────────────────────────── */}
+          {isToday && (
+            <div className="space-y-4">
+              {/* Técnica TAB — só sábado */}
+              {isSaturday && (
+                <Card glow>
+                  <div className="flex items-center gap-4">
+                    <div className="grid h-12 w-12 shrink-0 place-items-center rounded-2xl text-xl"
+                      style={{ background: "color-mix(in srgb, var(--c-amber) 18%, transparent)" }}>
+                      ⚡
+                    </div>
+                    <div>
+                      <p className="text-sm font-extrabold" style={{ color: "var(--c-amber)" }}>Técnica TAB — Sábado</p>
+                      <p className="text-xs text-text-muted mt-0.5">Resolva 15 questões de simulado de qualquer conteúdo hoje.</p>
+                    </div>
+                    <Zap size={20} style={{ color: "var(--c-amber)" }} className="ml-auto shrink-0" />
+                  </div>
+                </Card>
+              )}
+
+              {/* Revisões do dia anterior */}
+              {revisionsFromYesterday.length > 0 && (
+                <Card>
+                  <SectionTitle>
+                    <span className="flex items-center gap-2">
+                      <RotateCcw size={15} style={{ color: "var(--secondary)" }} />
+                      Revisões de ontem ({revisionsFromYesterday.length})
+                    </span>
+                  </SectionTitle>
+                  <div className="mt-2 space-y-1.5">
+                    {revisionsFromYesterday.map((t) => {
+                      const color = SUBJECT_COLORS_ROTINA[t.subject] ?? "var(--text-muted)";
+                      return (
+                        <div key={t.id} className="flex items-center gap-3 rounded-xl border border-border bg-surface-2/30 px-3 py-2">
+                          <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
+                          <span className="flex-1 text-sm"><b>{t.subject}</b> — {t.topic}</span>
+                          <Badge color="var(--secondary)">Revisar hoje</Badge>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  <p className="mt-2 text-[11px] text-text-muted">💡 Faça Anki + exercícios de cada um desses conteúdos.</p>
+                </Card>
+              )}
+
+              {/* Conteúdos do dia */}
+              <Card>
+                <div className="flex items-center justify-between">
+                  <SectionTitle>
+                    <span className="flex items-center gap-2">
+                      <GraduationCap size={15} style={{ color: "var(--primary)" }} />
+                      Estudos do dia
+                    </span>
+                  </SectionTitle>
+                  <button
+                    onClick={() => setShowAddStudy((v) => !v)}
+                    className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-1.5 text-xs font-semibold text-text-muted transition-colors hover:border-primary/50 hover:text-primary"
+                  >
+                    <Plus size={13} /> Adicionar
+                  </button>
+                </div>
+
+                <AnimatePresence>
+                  {showAddStudy && (
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} className="overflow-hidden">
+                      <div className="mt-3 grid grid-cols-1 gap-2 rounded-xl border border-border bg-surface-2/40 p-3 sm:grid-cols-3">
+                        <div>
+                          <label className="mb-1 block text-[10px] font-semibold text-text-muted">Matéria</label>
+                          <select
+                            className="w-full rounded-lg border border-border bg-surface-2 px-2 py-1.5 text-xs outline-none focus:border-primary/60"
+                            value={newStudy.subject}
+                            onChange={(e) => setNewStudy((p) => ({ ...p, subject: e.target.value }))}
+                          >
+                            {SUBJECTS_LIST.map((s) => <option key={s}>{s}</option>)}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[10px] font-semibold text-text-muted">Conteúdo / Tópico</label>
+                          <input
+                            className="w-full rounded-lg border border-border bg-surface-2 px-2 py-1.5 text-xs outline-none focus:border-primary/60"
+                            placeholder="Ex: Citologia"
+                            value={newStudy.topic}
+                            onChange={(e) => setNewStudy((p) => ({ ...p, topic: e.target.value }))}
+                            onKeyDown={(e) => e.key === "Enter" && addStudyTask()}
+                          />
+                        </div>
+                        <div>
+                          <label className="mb-1 block text-[10px] font-semibold text-text-muted">Passo atual</label>
+                          <select
+                            className="w-full rounded-lg border border-border bg-surface-2 px-2 py-1.5 text-xs outline-none focus:border-primary/60"
+                            value={newStudy.step}
+                            onChange={(e) => setNewStudy((p) => ({ ...p, step: e.target.value as StudyStep }))}
+                          >
+                            {STUDY_STEPS.map((s) => <option key={s}>{s}</option>)}
+                          </select>
+                        </div>
+                        <div className="flex gap-2 sm:col-span-3">
+                          <button onClick={addStudyTask} className="flex-1 rounded-lg py-1.5 text-xs font-bold text-white" style={{ background: "var(--primary)" }}>Salvar</button>
+                          <button onClick={() => setShowAddStudy(false)} className="rounded-lg border border-border px-3 text-xs text-text-muted hover:text-text">Cancelar</button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+
+                <div className="mt-3 space-y-2">
+                  {studyTasks.length === 0 && (
+                    <p className="py-4 text-center text-xs text-text-muted">Nenhum conteúdo adicionado ainda. Clique em "+ Adicionar".</p>
+                  )}
+                  {studyTasks.map((t) => {
+                    const color = SUBJECT_COLORS_ROTINA[t.subject] ?? "var(--text-muted)";
+                    const stepIdx = STUDY_STEPS.indexOf(t.step);
+                    return (
+                      <div key={t.id}
+                        className="rounded-xl border px-3 py-2.5 transition-colors"
+                        style={{
+                          borderColor: t.done ? "color-mix(in srgb, var(--success) 30%, transparent)" : "var(--border)",
+                          background: t.done ? "color-mix(in srgb, var(--success) 5%, transparent)" : "transparent",
+                        }}
+                      >
+                        <div className="flex items-center gap-3">
+                          <button onClick={() => toggleStudyTask(t.id)}
+                            className="grid h-6 w-6 shrink-0 place-items-center rounded-full border-2 text-[10px] transition-all"
+                            style={{ borderColor: t.done ? "var(--success)" : "var(--border-strong)", background: t.done ? "var(--success)" : "transparent", color: "#fff" }}
+                          >
+                            {t.done && "✓"}
+                          </button>
+                          <span className="h-2 w-2 shrink-0 rounded-full" style={{ background: color }} />
+                          <div className="flex-1 min-w-0">
+                            <p className={`text-sm font-semibold ${t.done ? "line-through text-text-muted" : ""}`}>
+                              <span style={{ color }}>{t.subject}</span> — {t.topic}
+                            </p>
+                            {/* Trilha do método */}
+                            <div className="mt-1.5 flex items-center gap-1">
+                              {STUDY_STEPS.map((step, i) => (
+                                <span key={step} className="flex items-center gap-1">
+                                  <span
+                                    className="rounded px-1.5 py-0.5 text-[10px] font-bold"
+                                    style={{
+                                      background: i < stepIdx ? "color-mix(in srgb, var(--success) 18%, transparent)" : i === stepIdx ? color : "var(--surface-2)",
+                                      color: i < stepIdx ? "var(--success)" : i === stepIdx ? color : "var(--text-muted)",
+                                    }}
+                                  >
+                                    {step}
+                                  </span>
+                                  {i < STUDY_STEPS.length - 1 && <ChevronRight size={9} className="text-border-strong" />}
+                                </span>
+                              ))}
+                            </div>
+                          </div>
+                          {!t.done && stepIdx < STUDY_STEPS.length - 1 && (
+                            <button onClick={() => advanceStep(t.id)}
+                              className="shrink-0 rounded-lg border border-border px-2 py-1 text-[10px] font-semibold text-text-muted hover:border-primary/50 hover:text-primary transition-colors">
+                              Avançar →
+                            </button>
+                          )}
+                          <button onClick={() => removeStudyTask(t.id)} className="shrink-0 text-text-muted opacity-50 hover:opacity-100">
+                            <X size={13} />
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {studyTasks.length > 0 && (
+                  <div className="mt-3 flex items-center justify-between rounded-xl bg-surface-2/40 px-3 py-2 text-xs">
+                    <span className="flex items-center gap-1.5 text-text-muted">
+                      <BookOpen size={13} /> {studyTasks.filter((t) => t.done).length}/{studyTasks.length} conteúdos concluídos hoje
+                    </span>
+                    <span className="text-text-muted">→ Revisão amanhã</span>
+                  </div>
+                )}
+              </Card>
+            </div>
+          )}
 
           {/* Adicionar tarefa do dia */}
           <Card>
