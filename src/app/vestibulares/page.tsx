@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy, ChevronDown, ChevronUp, BookOpen, Star, Filter,
   Plus, Pencil, Trash2, X, Save, CalendarDays, Layers, FileText, Loader2,
+  CheckCircle2, Circle, Zap, Brain,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
@@ -129,6 +130,8 @@ export default function VestibularesPage() {
   const [showOnlySelected, setShowOnlySelected] = useState(true);
   const [pdfLoading, setPdfLoading] = useState(false);
   const pdfInputRef = useRef<HTMLInputElement>(null);
+  const [studiedTopics, setStudiedTopics] = useState<Set<string>>(new Set());
+  const [topicMeta, setTopicMeta] = useState<Record<string, { urgency: number; difficulty: number }>>({});
 
   // Load from localStorage
   useEffect(() => {
@@ -138,7 +141,38 @@ export default function VestibularesPage() {
     } else {
       setVestibulares(VESTIBULARES_TARGETS.map(toEntry));
     }
+    try {
+      const st = localStorage.getItem("vest-studied-topics");
+      if (st) setStudiedTopics(new Set(JSON.parse(st)));
+      const tm = localStorage.getItem("vest-topic-meta");
+      if (tm) setTopicMeta(JSON.parse(tm));
+    } catch { /* ignore */ }
   }, []);
+
+  const toggleStudied = (topicId: string) => {
+    setStudiedTopics((prev) => {
+      const next = new Set(prev);
+      if (next.has(topicId)) next.delete(topicId); else next.add(topicId);
+      localStorage.setItem("vest-studied-topics", JSON.stringify([...next]));
+      return next;
+    });
+  };
+
+  const setTopicUrgency = (topicId: string, urgency: number) => {
+    setTopicMeta((prev) => {
+      const next = { ...prev, [topicId]: { ...prev[topicId], urgency } };
+      localStorage.setItem("vest-topic-meta", JSON.stringify(next));
+      return next;
+    });
+  };
+
+  const setTopicDifficulty = (topicId: string, difficulty: number) => {
+    setTopicMeta((prev) => {
+      const next = { ...prev, [topicId]: { ...prev[topicId], difficulty } };
+      localStorage.setItem("vest-topic-meta", JSON.stringify(next));
+      return next;
+    });
+  };
 
   const save = (updated: VestibularEntry[]) => {
     setVestibulares(updated);
@@ -725,45 +759,97 @@ export default function VestibularesPage() {
           {filteredSubjects.map((subject) => {
             const topics = topicsBySubject[subject];
             const color = SUBJECT_COLORS[subject] ?? "var(--text-muted)";
+            const studiedCount = topics.filter((t) => studiedTopics.has(t.id)).length;
+            const studiedPct = Math.round((studiedCount / topics.length) * 100);
             return (
               <div key={subject}>
                 <div className="mb-2 flex items-center gap-2">
                   <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
                   <span className="text-sm font-bold">{subject}</span>
                   <span className="text-xs text-text-muted">{topics.length} tópicos</span>
+                  <span className="ml-auto text-xs font-semibold tabular-nums" style={{ color }}>
+                    {studiedCount}/{topics.length} estudados ({studiedPct}%)
+                  </span>
                 </div>
-                <div className="space-y-1.5 pl-4">
-                  {topics.map((t) => (
-                    <div key={t.id} className="flex items-start gap-3 rounded-xl border border-border bg-surface-2/30 px-3 py-2.5">
-                      <div className="mt-0.5 shrink-0">
-                        {t.weight === 3 ? (
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold text-white" style={{ background: color }}>!!!</span>
-                        ) : t.weight === 2 ? (
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold" style={{ background: `color-mix(in srgb, ${color} 20%, transparent)`, color }}>!!</span>
-                        ) : (
-                          <span className="flex h-5 w-5 items-center justify-center rounded-full border border-border text-[10px] text-text-muted">!</span>
-                        )}
+                {/* Barra de progresso por matéria */}
+                <div className="mb-3 h-1.5 w-full overflow-hidden rounded-full bg-surface-2">
+                  <div className="h-full rounded-full transition-all" style={{ width: `${studiedPct}%`, background: color }} />
+                </div>
+                <div className="space-y-1.5 pl-2">
+                  {topics.map((t) => {
+                    const studied = studiedTopics.has(t.id);
+                    const meta = topicMeta[t.id];
+                    const urgency = meta?.urgency ?? t.weight;
+                    const difficulty = meta?.difficulty ?? 2;
+                    return (
+                      <div key={t.id}
+                        className="flex items-start gap-3 rounded-xl border px-3 py-2.5 transition-colors"
+                        style={{
+                          borderColor: studied ? "color-mix(in srgb, var(--success) 30%, transparent)" : "var(--border)",
+                          background: studied ? "color-mix(in srgb, var(--success) 5%, transparent)" : "color-mix(in srgb, var(--surface-2) 30%, transparent)",
+                        }}
+                      >
+                        {/* Check estudado */}
+                        <button onClick={() => toggleStudied(t.id)} className="mt-0.5 shrink-0 transition-colors hover:opacity-80">
+                          {studied
+                            ? <CheckCircle2 size={18} style={{ color: "var(--success)" }} />
+                            : <Circle size={18} className="text-border-strong" />}
+                        </button>
+
+                        <div className="flex-1 min-w-0">
+                          <p className={`text-sm font-semibold ${studied ? "line-through text-text-muted" : ""}`}>{t.topic}</p>
+                          <p className="text-[11px] text-text-muted mt-0.5">{t.subtopics.join(" · ")}</p>
+
+                          {/* Urgência + Dificuldade */}
+                          <div className="mt-1.5 flex items-center gap-3">
+                            <div className="flex items-center gap-1">
+                              <Zap size={11} className="text-text-muted" />
+                              <span className="text-[10px] text-text-muted">Urgência:</span>
+                              {[1,2,3].map((lvl) => (
+                                <button key={lvl} onClick={() => setTopicUrgency(t.id, lvl)}
+                                  className="h-4 w-4 rounded text-[9px] font-bold transition-all"
+                                  style={{
+                                    background: urgency >= lvl ? (lvl === 3 ? "var(--danger)" : lvl === 2 ? "var(--c-amber)" : "var(--success)") : "var(--surface-2)",
+                                    color: urgency >= lvl ? "#fff" : "var(--text-muted)",
+                                  }}>
+                                  {lvl}
+                                </button>
+                              ))}
+                            </div>
+                            <div className="flex items-center gap-1">
+                              <Brain size={11} className="text-text-muted" />
+                              <span className="text-[10px] text-text-muted">Dific.:</span>
+                              {[1,2,3].map((lvl) => (
+                                <button key={lvl} onClick={() => setTopicDifficulty(t.id, lvl)}
+                                  className="h-4 w-4 rounded text-[9px] font-bold transition-all"
+                                  style={{
+                                    background: difficulty >= lvl ? "var(--c-lilac)" : "var(--surface-2)",
+                                    color: difficulty >= lvl ? "#fff" : "var(--text-muted)",
+                                  }}>
+                                  {lvl}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="flex flex-wrap gap-1 shrink-0">
+                          {t.vestibulares
+                            .filter((vid) => showOnlySelected ? selectedIds.includes(vid) : true)
+                            .map((vid) => {
+                              const vst = vestibulares.find((v) => v.id === vid);
+                              if (!vst) return null;
+                              return (
+                                <span key={vid} className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
+                                  style={{ background: vst.color }}>
+                                  {vst.name}
+                                </span>
+                              );
+                            })}
+                        </div>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold">{t.topic}</p>
-                        <p className="text-[11px] text-text-muted">{t.subtopics.join(" · ")}</p>
-                      </div>
-                      <div className="flex flex-wrap gap-1 shrink-0">
-                        {t.vestibulares
-                          .filter((vid) => showOnlySelected ? selectedIds.includes(vid) : true)
-                          .map((vid) => {
-                            const vst = vestibulares.find((v) => v.id === vid);
-                            if (!vst) return null;
-                            return (
-                              <span key={vid} className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white"
-                                style={{ background: vst.color }}>
-                                {vst.name}
-                              </span>
-                            );
-                          })}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               </div>
             );
