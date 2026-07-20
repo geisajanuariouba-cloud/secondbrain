@@ -66,30 +66,21 @@ const PRESET_COLORS = [
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function toEntry(v: (typeof VESTIBULARES_TARGETS)[0]): VestibularEntry {
-  const phaseDates = [v.date, ...(v.secondDate ? [v.secondDate] : [])];
+  const isSeriado = v.type === "Seriado" || v.type === "PISM";
+  const phaseEntries: PhaseEntry[] = Array.from({ length: v.phases }, (_, i) => ({
+    number: i + 1,
+    label: v.phaseLabels?.[i] ?? (v.phases === 1 ? "Prova única" : `${i + 1}ª Fase`),
+    date: v.phaseDates?.[i] ?? (i === 0 ? v.date : i === 1 ? (v.secondDate ?? "") : ""),
+    content: v.phaseContents?.[i] ?? "",
+    subjects: v.phaseSubjects?.[i] ?? [],
+  }));
   return {
-    id: v.id,
-    name: v.name,
-    fullName: v.fullName,
-    university: v.university,
-    color: v.color,
-    selected: v.selected,
-    isSeriado: v.type === "PISM",
-    phaseEntries: Array.from({ length: v.phases }, (_, i) => ({
-      number: i + 1,
-      label: v.phases === 1 ? "Prova única" : `${i + 1}ª Fase`,
-      date: phaseDates[i] ?? "",
-      content: "",
-    })),
-    subjects: v.subjects,
-    programmaticContent: "",
-    notes: "",
-    medicineAvg: v.medicineAvg,
-    medicineCutNote: v.medicineCutNote,
-    date: v.date,
-    secondDate: v.secondDate,
-    phases: v.phases,
-    type: v.type,
+    id: v.id, name: v.name, fullName: v.fullName, university: v.university,
+    color: v.color, selected: v.selected, isSeriado,
+    phaseEntries,
+    subjects: v.subjects, programmaticContent: "", notes: "",
+    medicineAvg: v.medicineAvg, medicineCutNote: v.medicineCutNote,
+    date: v.date, secondDate: v.secondDate, phases: v.phases, type: v.type,
   };
 }
 
@@ -148,12 +139,20 @@ export default function VestibularesPage() {
 
   // Load from localStorage
   useEffect(() => {
-    const saved = localStorage.getItem("vestibulares-data");
+    const base = VESTIBULARES_TARGETS.map(toEntry);
     let entries: VestibularEntry[];
+    const saved = localStorage.getItem("vestibulares-data");
     if (saved) {
-      entries = JSON.parse(saved);
+      const savedList: VestibularEntry[] = JSON.parse(saved);
+      const savedMap = new Map(savedList.map(v => [v.id, v]));
+      const baseIds = new Set(base.map(v => v.id));
+      // Base entries: use saved version (user customizations) if exists, else fresh base
+      const merged = base.map(v => savedMap.get(v.id) ?? v);
+      // User-added entries not in base
+      const userAdded = savedList.filter(v => !baseIds.has(v.id));
+      entries = [...merged, ...userAdded];
     } else {
-      entries = VESTIBULARES_TARGETS.map(toEntry);
+      entries = base;
     }
     setVestibulares(entries);
 

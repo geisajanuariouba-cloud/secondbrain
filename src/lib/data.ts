@@ -426,57 +426,178 @@ export type VestibularTarget = {
   date: string;
   secondDate?: string;
   color: string;
-  medicineAvg?: number; // média de aprovação em medicina (%)
-  medicineCutNote?: string; // descrição da nota de corte
+  medicineAvg?: number;
+  medicineCutNote?: string;
   phases: number;
   subjects: string[];
   selected: boolean;
   type: string;
+  // Per-phase data (seriado vestibulares)
+  phaseLabels?: string[];
+  phaseDates?: string[];
+  phaseSubjects?: string[][];
+  phaseContents?: string[];
 };
 
+const MOD1_SUBJECTS = ["Biologia", "Química", "Física", "Matemática", "Português", "Literatura", "Redação", "História", "Geografia", "Inglês"];
+const MOD1_SUBJECTS_FULL = [...MOD1_SUBJECTS, "Sociologia", "Filosofia"];
+const ALL_SUBJECTS = ["Português", "Literatura", "Redação", "Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Sociologia", "Filosofia", "Inglês"];
+
+const PISM_MOD1 = "Biologia: Citologia, Histologia Animal, Origem da Vida, Classificação dos Seres Vivos · Química: Matéria e Energia, Modelos Atômicos, Tabela Periódica, Ligações Químicas · Física: Grandezas Físicas, Cinemática (MU/MUV), Leis de Newton · Matemática: Conjuntos, Funções 1º e 2º Grau, Equações, Trigonometria · Português/Literatura: Fonologia, Morfologia, Trovadorismo, Humanismo, Classicismo · História: Pré-história, Antiguidade Oriental e Clássica, Idade Média · Geografia: Cartografia, Relevo, Hidrografia, Climatologia · Inglês: Funções comunicativas básicas, Interpretação · Sociologia: Introdução, A Sociologia como Ciência · Filosofia: Introdução, Filosofia Antiga";
+const PISM_MOD2 = "Biologia: Genética Mendeliana, Evolução, Ecologia · Química: Funções Inorgânicas, Estequiometria, Termoquímica, Cinética · Física: Trabalho e Energia, Termologia, Óptica básica · Matemática: Geometria Plana, Progressões, Logaritmos, Análise Combinatória · Português/Literatura: Sintaxe, Figuras de Linguagem, Barroco, Arcadismo, Romantismo · História: Idade Moderna, Revoluções Liberais, Brasil Colonial · Geografia: Geopolítica, Urbanização, Industrialização · Inglês: Gramática instrumental, Interpretação";
+const PISM_MOD3 = "Biologia: Fisiologia Animal e Vegetal, Embriologia, Microbiologia, Imunologia · Química: Química Orgânica, Eletroquímica, Equilíbrio Químico, Soluções · Física: Eletrostática, Eletrodinâmica, Eletromagnetismo, Física Moderna · Matemática: Geometria Espacial, Geometria Analítica, Estatística, Trigonometria avançada · Português/Literatura: Regência, Concordância, Modernismo, Literatura Contemporânea · História: Brasil República, Guerras Mundiais, Guerra Fria, Mundo Contemporâneo · Geografia: Brasil: Regiões e Biomas, Questões Ambientais, Globalização";
+
+const PASES_MOD1 = "Biologia: Citologia (organelas, metabolismo, divisão celular), Histologia Animal, Origem da Vida · Química: Matéria e Energia, Estrutura Atômica, Tabela Periódica, Ligações Químicas, Funções Inorgânicas (noções) · Física: Grandezas e Unidades, Cinemática Escalar, Dinâmica (Leis de Newton), Trabalho e Energia · Matemática: Conjuntos, Relações e Funções, Funções 1º e 2º Grau, Equações e Inequações · Português: Fonologia, Morfologia, Sintaxe básica, Interpretação · Literatura: Trovadorismo, Humanismo, Classicismo Português (Camões) · Redação: Tipos textuais, Dissertação-argumentativa · História: Pré-história, Civilizações Antigas (Egito, Grécia, Roma), Idade Média · Geografia: Cartografia, Dinâmica Interna e Externa da Terra, Hidrografia, Climatologia · Inglês: Funções comunicativas, Vocabulário básico, Interpretação";
+const PASES_MOD2 = "Biologia: Genética Mendeliana e Cromossômica, Evolução, Ecologia · Química: Funções Inorgânicas, Estequiometria, Termoquímica, Cinética Química, Equilíbrio Químico · Física: Thermologia, Óptica Geométrica, Ondulatória, Hidrostática · Matemática: Geometria Plana, Progressões Aritméticas e Geométricas, Logaritmos e Exponenciais, Combinatória e Probabilidade · Português/Literatura: Sintaxe, Semântica, Barroco, Arcadismo, Romantismo · História: Idade Moderna, Colonização do Brasil, Século XIX e Revoluções · Geografia: Dinâmica Econômica, Urbanização, Industrialização, Questões Ambientais";
+const PASES_MOD3 = "Biologia: Fisiologia Animal, Fisiologia Vegetal, Embriologia, Microbiologia, Imunologia, Biologia Molecular · Química: Química Orgânica completa, Eletroquímica, Soluções e Propriedades Coligativas · Física: Eletrostática, Eletrodinâmica, Magnetismo, Eletromagnetismo, Física Moderna e Contemporânea · Matemática: Geometria Espacial, Geometria Analítica, Estatística, Trigonometria completa · Português/Literatura: Concordância, Regência, Crase, Modernismo brasileiro, Literatura Contemporânea · História: Brasil República, I e II Guerras Mundiais, Guerra Fria, Brasil Contemporâneo · Geografia: Brasil: Regiões, Biomas e Questões Ambientais, Geopolítica Contemporânea";
+
+const PSAS_MOD1 = "Biologia: Citologia, Histologia, Classificação dos Seres Vivos, Origem da Vida · Química: Matéria e suas Propriedades, Modelos Atômicos, Tabela Periódica, Ligações Químicas · Física: Grandezas Físicas, Cinemática, Dinâmica (Leis de Newton) · Matemática: Conjuntos, Funções, Geometria Plana básica · Português/Literatura: Morfologia, Fonologia, Trovadorismo ao Classicismo · Redação: Gêneros textuais, Dissertação · História: Pré-história ao Fim do Medievo · Geografia: Cartografia, Relevo, Clima, Biomas brasileiros · Inglês: Interpretação, Vocabulário · Sociologia: Introdução à Sociologia · Filosofia: Filosofia Antiga e Medieval";
+const PSAS_MOD2 = "Biologia: Genética, Evolução, Ecologia · Química: Funções Inorgânicas, Estequiometria, Termoquímica · Física: Trabalho/Energia, Termodinâmica, Óptica · Matemática: Geometria Plana, Logaritmos, Progressões, Combinatória · Português/Literatura: Sintaxe, Barroco, Arcadismo, Romantismo · História: Modernidade, Brasil Colonial e Imperial · Geografia: Espaço Geopolítico, Urbanização";
+const PSAS_MOD3 = "Biologia: Fisiologia, Embriologia, Microbiologia, Imunologia, Biotecnologia · Química: Química Orgânica, Eletroquímica, Soluções · Física: Eletromagnetismo, Física Moderna · Matemática: Geometria Espacial, Geometria Analítica, Estatística · Português/Literatura: Regência, Concordância, Modernismo, Contemporânea · História: Brasil República, Guerras Mundiais, Guerra Fria · Geografia: Brasil contemporâneo, Geopolítica";
+
+const PAS_UFLA_E1 = "Biologia: Citologia, Histologia Animal, Origem da Vida, Ecologia básica · Química: Matéria e Energia, Átomo e Tabela Periódica, Ligações Químicas, Funções Inorgânicas (introdução) · Física: Grandezas Físicas e Medidas, Cinemática, Dinâmica · Matemática: Conjuntos, Funções 1º e 2º Grau, Equações, Trigonometria básica · Português/Literatura: Fonologia, Morfologia, Gêneros Textuais, Trovadorismo, Humanismo, Classicismo · Redação: Dissertação-argumentativa · História: Pré-história, Mundo Antigo (Egito, Grécia, Roma), Idade Média · Geografia: Cartografia, Relevo, Hidrografia, Climatologia · Inglês: Interpretação de textos, Funções comunicativas básicas";
+const PAS_UFLA_E2 = "Biologia: Genética, Evolução, Ecologia aprofundada, Botânica · Química: Funções Inorgânicas, Estequiometria, Termoquímica, Cinética Química · Física: Trabalho/Energia, Hidrostática, Termologia, Óptica · Matemática: Geometria Plana, Progressões, Logaritmos, Combinatória e Probabilidade · Português/Literatura: Sintaxe, Barroco, Arcadismo, Romantismo · História: Idade Moderna, Colonização do Brasil, Século XIX · Geografia: Urbanização, Industrialização, Questões Ambientais";
+const PAS_UFLA_E3 = "Biologia: Fisiologia Animal e Vegetal, Embriologia, Microbiologia, Imunologia · Química: Química Orgânica, Eletroquímica, Soluções, Equilíbrio Químico · Física: Eletrostática, Eletrodinâmica, Eletromagnetismo, Física Moderna · Matemática: Geometria Espacial, Geometria Analítica, Estatística · Português/Literatura: Concordância, Regência, Modernismo, Contemporânea · História: Brasil República, Guerras Mundiais, Mundo Contemporâneo · Geografia: Brasil: Regiões e Biomas, Geopolítica";
+
 export const VESTIBULARES_TARGETS: VestibularTarget[] = [
-  {
-    id: "enem", name: "ENEM", fullName: "Exame Nacional do Ensino Médio",
-    university: ["UFRJ (SISU)", "UERJ", "UFMG", "UFU", "UFSCAR"],
-    date: "2026-11-08", secondDate: "2026-11-09", color: "#3b82f6",
-    medicineAvg: 92, medicineCutNote: "~750-820 pts para medicina pública federal via SISU",
-    phases: 1, selected: true, type: "ENEM",
-    subjects: ["Português", "Literatura", "Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Sociologia", "Filosofia", "Inglês", "Redação"],
-  },
-  {
-    id: "fuvest", name: "FUVEST", fullName: "Fundação Universitária para o Vestibular",
-    university: ["USP"], date: "2026-11-22", color: "#f59e0b",
-    medicineAvg: 95, medicineCutNote: "~78-85 pts (1ª fase, 90 questões) · Medicina é o curso mais concorrido",
-    phases: 2, selected: true, type: "Vestibular próprio",
-    subjects: ["Português", "Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Inglês", "Redação"],
-  },
+  // ── SERIADOS ──────────────────────────────────────────────────────────────
   {
     id: "pism", name: "PISM", fullName: "Programa de Ingresso Seletivo Misto",
     university: ["UFJF"], date: "2026-10-18", color: "#8b5cf6",
     medicineAvg: 88, medicineCutNote: "Processo seriado — soma dos 3 módulos · Nota alta em ciências essencial",
-    phases: 3, selected: true, type: "PISM",
-    subjects: ["Português", "Literatura", "Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Inglês", "Sociologia", "Filosofia", "Redação"],
+    phases: 3, selected: true, type: "Seriado",
+    subjects: ALL_SUBJECTS,
+    phaseLabels: ["Módulo 1", "Módulo 2", "Módulo 3"],
+    phaseDates: ["2026-10-18", "2027-10-17", "2028-10-15"],
+    phaseSubjects: [MOD1_SUBJECTS_FULL, [...MOD1_SUBJECTS_FULL], [...MOD1_SUBJECTS_FULL]],
+    phaseContents: [PISM_MOD1, PISM_MOD2, PISM_MOD3],
   },
   {
-    id: "unicamp", name: "UNICAMP", fullName: "Vestibular COMVEST/UNICAMP",
-    university: ["UNICAMP"], date: "2026-11-15", color: "#06b6d4",
-    medicineAvg: 93, medicineCutNote: "~67-74 pts (1ª fase, 90 questões) · 3 redações na 2ª fase",
+    id: "pases-ufv", name: "PASES", fullName: "Programa de Avaliação Seriada — UFV",
+    university: ["UFV"], date: "2026-11-07", color: "#16a34a",
+    medicineAvg: 86, medicineCutNote: "Processo seriado — 3 etapas · Ciências e Matemática têm maior peso",
+    phases: 3, selected: true, type: "Seriado",
+    subjects: ALL_SUBJECTS,
+    phaseLabels: ["Etapa 1", "Etapa 2", "Etapa 3"],
+    phaseDates: ["2026-11-07", "2027-11-06", "2028-11-04"],
+    phaseSubjects: [MOD1_SUBJECTS, [...MOD1_SUBJECTS], [...ALL_SUBJECTS]],
+    phaseContents: [PASES_MOD1, PASES_MOD2, PASES_MOD3],
+  },
+  {
+    id: "psas-ufmg", name: "PSAS", fullName: "Programa de Seleção por Avaliação Seriada — UFMG",
+    university: ["UFMG"], date: "2026-10-25", color: "#dc2626",
+    medicineAvg: 94, medicineCutNote: "Processo seriado — soma das 3 etapas · UFMG medicina altíssima concorrência",
+    phases: 3, selected: true, type: "Seriado",
+    subjects: ALL_SUBJECTS,
+    phaseLabels: ["Etapa 1", "Etapa 2", "Etapa 3"],
+    phaseDates: ["2026-10-25", "2027-10-24", "2028-10-22"],
+    phaseSubjects: [MOD1_SUBJECTS_FULL, [...MOD1_SUBJECTS_FULL], [...ALL_SUBJECTS]],
+    phaseContents: [PSAS_MOD1, PSAS_MOD2, PSAS_MOD3],
+  },
+  {
+    id: "pas-ufla", name: "PAS", fullName: "Programa de Avaliação Seriada — UFLA",
+    university: ["UFLA"], date: "2026-10-31", color: "#65a30d",
+    medicineAvg: 82, medicineCutNote: "Processo seriado — 3 etapas · Boa opção federal em MG",
+    phases: 3, selected: true, type: "Seriado",
+    subjects: MOD1_SUBJECTS,
+    phaseLabels: ["Etapa 1", "Etapa 2", "Etapa 3"],
+    phaseDates: ["2026-10-31", "2027-10-30", "2028-10-28"],
+    phaseSubjects: [MOD1_SUBJECTS, [...MOD1_SUBJECTS], [...ALL_SUBJECTS]],
+    phaseContents: [PAS_UFLA_E1, PAS_UFLA_E2, PAS_UFLA_E3],
+  },
+  // ── VIA ENEM / SISU ───────────────────────────────────────────────────────
+  {
+    id: "enem", name: "ENEM", fullName: "Exame Nacional do Ensino Médio",
+    university: ["UFRJ (SISU)", "UFMG (SISU)", "UFU (SISU)", "UFSCAR (SISU)", "UFLA (SISU)"],
+    date: "2028-11-05", secondDate: "2028-11-06", color: "#3b82f6",
+    medicineAvg: 92, medicineCutNote: "~750-820 pts para medicina pública federal via SISU",
+    phases: 1, selected: true, type: "ENEM",
+    subjects: ALL_SUBJECTS,
+  },
+  {
+    id: "ufrj", name: "UFRJ", fullName: "Universidade Federal do Rio de Janeiro — via ENEM/SISU",
+    university: ["UFRJ"], date: "2028-11-05", color: "#0284c7",
+    medicineAvg: 93, medicineCutNote: "UFRJ Medicina via SISU — uma das mais concorridas do Brasil · Nota de corte ~800+ pts",
+    phases: 1, selected: true, type: "ENEM",
+    subjects: ALL_SUBJECTS,
+  },
+  {
+    id: "ufscar", name: "UFSCar", fullName: "Universidade Federal de São Carlos — via ENEM/SISU",
+    university: ["UFSCar"], date: "2028-11-05", color: "#059669",
+    medicineAvg: 89, medicineCutNote: "UFSCar Medicina via SISU · Nota de corte ~780 pts",
+    phases: 1, selected: true, type: "ENEM",
+    subjects: ALL_SUBJECTS,
+  },
+  // ── VESTIBULARES TRADICIONAIS ─────────────────────────────────────────────
+  {
+    id: "fuvest", name: "FUVEST", fullName: "Vestibular USP — FUVEST",
+    university: ["USP"], date: "2028-11-17", color: "#f59e0b",
+    medicineAvg: 97, medicineCutNote: "~78-85 pts (1ª fase, 90 questões) · Medicina é o curso mais concorrido da USP",
     phases: 2, selected: true, type: "Vestibular próprio",
     subjects: ["Português", "Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Inglês", "Redação"],
   },
   {
-    id: "einstein", name: "Einstein", fullName: "Vestibular Insper Einstein",
-    university: ["Einstein"], date: "2026-12-06", color: "#ec4899",
-    medicineAvg: 97, medicineCutNote: "Altíssima concorrência · Avaliação comportamental + provas · Particular",
-    phases: 2, selected: false, type: "Vestibular próprio",
-    subjects: ["Português", "Matemática", "Física", "Química", "Biologia", "Inglês", "Redação"],
+    id: "unicamp", name: "UNICAMP", fullName: "Vestibular COMVEST — UNICAMP",
+    university: ["UNICAMP"], date: "2028-11-10", color: "#06b6d4",
+    medicineAvg: 95, medicineCutNote: "~67-74 pts (1ª fase) · 3 redações na 2ª fase · Muito interdisciplinar",
+    phases: 2, selected: true, type: "Vestibular próprio",
+    subjects: ["Português", "Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Inglês", "Redação"],
+  },
+  {
+    id: "unesp", name: "UNESP", fullName: "Vestibular VUNESP — UNESP",
+    university: ["UNESP"], date: "2028-11-02", color: "#0891b2",
+    medicineAvg: 90, medicineCutNote: "1ª fase objetiva (90q) · 2ª fase dissertativa · Medicina em Botucatu e Araçatuba",
+    phases: 2, selected: true, type: "Vestibular próprio",
+    subjects: ["Português", "Literatura", "Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Inglês", "Redação"],
   },
   {
     id: "famerp", name: "FAMERP", fullName: "Faculdade de Medicina de São José do Rio Preto",
-    university: ["FAMERP"], date: "2026-12-13", color: "#f97316",
-    medicineAvg: 91, medicineCutNote: "Pública estadual de alta qualidade · Muito concorrida",
-    phases: 2, selected: false, type: "Vestibular próprio",
+    university: ["FAMERP"], date: "2028-12-07", color: "#f97316",
+    medicineAvg: 91, medicineCutNote: "Pública estadual · Somente medicina e enfermagem · Muito concorrida",
+    phases: 2, selected: true, type: "Vestibular próprio",
     subjects: ["Português", "Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Redação"],
+  },
+  {
+    id: "uemg", name: "UEMG", fullName: "Vestibular UEMG — Universidade do Estado de Minas Gerais",
+    university: ["UEMG"], date: "2028-10-12", color: "#7c3aed",
+    medicineAvg: 80, medicineCutNote: "Estadual de MG · Medicina em Passos e Diamantina · Boa concorrência regional",
+    phases: 1, selected: true, type: "Vestibular próprio",
+    subjects: ["Português", "Literatura", "Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Redação"],
+  },
+  {
+    id: "uerj", name: "UERJ", fullName: "Vestibular UERJ — Universidade do Estado do Rio de Janeiro",
+    university: ["UERJ"], date: "2028-10-19", color: "#ea580c",
+    medicineAvg: 88, medicineCutNote: "Sistema de cotas e vagas mistas · 2 provas: TQ1 e TQ2 + Específicas",
+    phases: 2, selected: true, type: "Vestibular próprio",
+    subjects: ["Português", "Literatura", "Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Inglês", "Redação"],
+  },
+  {
+    id: "ufu", name: "UFU", fullName: "Vestibular UFU — Universidade Federal de Uberlândia",
+    university: ["UFU"], date: "2028-10-26", color: "#b45309",
+    medicineAvg: 87, medicineCutNote: "Vestibular próprio · Medicina muito concorrida · Também usa SISU",
+    phases: 2, selected: true, type: "Vestibular próprio",
+    subjects: ["Português", "Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Inglês", "Redação"],
+  },
+  {
+    id: "coteps-unimontes", name: "COTEPS", fullName: "COTEPS — Universidade Estadual de Montes Claros",
+    university: ["UNIMONTES"], date: "2028-11-16", color: "#9333ea",
+    medicineAvg: 78, medicineCutNote: "Estadual de MG · Medicina em Montes Claros · Boa opção regional norte de MG",
+    phases: 1, selected: true, type: "Vestibular próprio",
+    subjects: ["Português", "Literatura", "Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Redação"],
+  },
+  {
+    id: "unifagoc", name: "UNIFAGOC", fullName: "Vestibular UNIFAGOC — Centro Universitário FAGOC",
+    university: ["UNIFAGOC"], date: "2028-11-09", color: "#db2777",
+    medicineAvg: 72, medicineCutNote: "Privada em Ubá, MG · Medicina com boa estrutura · Menor concorrência",
+    phases: 1, selected: true, type: "Vestibular próprio",
+    subjects: ["Português", "Matemática", "Física", "Química", "Biologia", "Redação"],
+  },
+  {
+    id: "einstein", name: "Einstein", fullName: "Vestibular Insper Einstein",
+    university: ["Einstein"], date: "2028-12-01", color: "#ec4899",
+    medicineAvg: 97, medicineCutNote: "Altíssima concorrência · Avaliação comportamental + provas + entrevistas · Particular",
+    phases: 2, selected: true, type: "Vestibular próprio",
+    subjects: ["Português", "Matemática", "Física", "Química", "Biologia", "Inglês", "Redação"],
   },
 ];
 
