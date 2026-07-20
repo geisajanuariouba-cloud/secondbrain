@@ -239,7 +239,7 @@ export default function EstudosPage() {
                 const steps = Object.entries(c.steps);
                 const doneSteps = steps.filter(([, v]) => v).length;
                 return (
-                  <div key={c.id} className="rounded-xl border border-border bg-surface-2/40 p-4">
+                  <Link key={c.id} href={`/estudos/${c.subject}`} className="block rounded-xl border border-border bg-surface-2/40 p-4 transition-all hover:-translate-y-0.5 hover:border-border-strong hover:shadow-[var(--shadow-md)]">
                     <div className="mb-3 flex items-center justify-between gap-2">
                       <div className="min-w-0">
                         <p className="truncate text-sm font-bold">{c.name}</p>
@@ -248,6 +248,7 @@ export default function EstudosPage() {
                       <div className="flex shrink-0 items-center gap-2">
                         {c.questions > 0 && <Badge color="var(--success)">{pct(c.correct, c.questions)}%</Badge>}
                         <span className="text-xs font-semibold text-text-muted">{doneSteps}/5</span>
+                        <ChevronRight size={13} className="text-text-muted" />
                       </div>
                     </div>
                     <div className="flex items-center gap-1">
@@ -264,7 +265,7 @@ export default function EstudosPage() {
                         </div>
                       ))}
                     </div>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
