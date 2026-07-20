@@ -20,6 +20,7 @@ type PhaseEntry = {
   label: string; // "1ª Fase", "Módulo 1", "Ano 1", etc.
   date: string;
   content: string; // conteúdo programático desta fase
+  subjects?: string[]; // matérias cobradas nesta fase (seriado)
 };
 
 type VestibularEntry = {
@@ -132,22 +133,59 @@ export default function VestibularesPage() {
   const pdfInputRef = useRef<HTMLInputElement>(null);
   const [studiedTopics, setStudiedTopics] = useState<Set<string>>(new Set());
   const [topicMeta, setTopicMeta] = useState<Record<string, { urgency: number; difficulty: number }>>({});
+  // currentPhases: vestibularId → phase index (0-based). -1 = manual override disabled auto
+  const [currentPhases, setCurrentPhases] = useState<Record<string, number>>({});
+
+  const todayStr = new Date().toISOString().slice(0, 10);
+
+  // Auto-compute current phase for a seriado vestibular based on today's date
+  function autoCurrentPhase(v: VestibularEntry): number {
+    if (!v.isSeriado || v.phaseEntries.length === 0) return 0;
+    // First phase whose date is today or in the future; if all passed, last phase
+    const idx = v.phaseEntries.findIndex((ph) => !ph.date || ph.date >= todayStr);
+    return idx === -1 ? v.phaseEntries.length - 1 : idx;
+  }
 
   // Load from localStorage
   useEffect(() => {
     const saved = localStorage.getItem("vestibulares-data");
+    let entries: VestibularEntry[];
     if (saved) {
-      setVestibulares(JSON.parse(saved));
+      entries = JSON.parse(saved);
     } else {
-      setVestibulares(VESTIBULARES_TARGETS.map(toEntry));
+      entries = VESTIBULARES_TARGETS.map(toEntry);
     }
+    setVestibulares(entries);
+
+    // Auto-advance current phases based on today's date
+    const savedPhases: Record<string, number> = {};
+    try { const cp = localStorage.getItem("vest-current-phases"); if (cp) Object.assign(savedPhases, JSON.parse(cp)); } catch { /* */ }
+    const computed: Record<string, number> = {};
+    entries.forEach((v) => {
+      if (!v.isSeriado) return;
+      const auto = autoCurrentPhase(v);
+      // Only use saved value if it wasn't auto-set to a passed phase
+      const saved = savedPhases[v.id];
+      computed[v.id] = (saved !== undefined && saved >= auto) ? saved : auto;
+    });
+    setCurrentPhases(computed);
+
     try {
       const st = localStorage.getItem("vest-studied-topics");
       if (st) setStudiedTopics(new Set(JSON.parse(st)));
       const tm = localStorage.getItem("vest-topic-meta");
       if (tm) setTopicMeta(JSON.parse(tm));
     } catch { /* ignore */ }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  function setCurrentPhase(vestId: string, phaseIdx: number) {
+    setCurrentPhases((prev) => {
+      const next = { ...prev, [vestId]: phaseIdx };
+      localStorage.setItem("vest-current-phases", JSON.stringify(next));
+      return next;
+    });
+  }
 
   const toggleStudied = (topicId: string) => {
     setStudiedTopics((prev) => {
@@ -275,11 +313,21 @@ export default function VestibularesPage() {
   const selectedIds = selected.map((v) => v.id);
 
   // Build subject → vestibular IDs map from actual configured vestibulares
-  // A topic belongs to a vestibular if that vestibular has the topic's subject in its subjects list
+  // For seriado: use current phase's subjects if set; fallback to global subjects
   const subjectToVestIds: Record<string, string[]> = {};
   const relevantVests = showOnlySelected ? selected : vestibulares;
   relevantVests.forEach((v) => {
-    v.subjects.forEach((subj) => {
+    let activeSubjects: string[];
+    if (v.isSeriado && v.phaseEntries.length > 0) {
+      const curIdx = currentPhases[v.id] ?? autoCurrentPhase(v);
+      const curPhase = v.phaseEntries[curIdx];
+      activeSubjects = (curPhase?.subjects && curPhase.subjects.length > 0)
+        ? curPhase.subjects
+        : v.subjects; // fallback to global if phase has no subjects set
+    } else {
+      activeSubjects = v.subjects;
+    }
+    activeSubjects.forEach((subj) => {
       if (!subjectToVestIds[subj]) subjectToVestIds[subj] = [];
       if (!subjectToVestIds[subj].includes(v.id)) subjectToVestIds[subj].push(v.id);
     });
@@ -417,6 +465,37 @@ export default function VestibularesPage() {
                     rows={2}
                     className="w-full resize-none rounded-lg border border-border bg-surface-2 px-3 py-1.5 text-sm outline-none focus:border-c-amber/50" />
                 </div>
+                {form.isSeriado && (
+                  <div>
+                    <label className="mb-1.5 block text-[11px] text-text-muted">Matérias cobradas nesta fase</label>
+                    <div className="flex flex-wrap gap-1">
+                      {SUBJECT_LIST.map((s) => {
+                        const active = (ph.subjects ?? []).includes(s);
+                        return (
+                          <button key={s} type="button"
+                            onClick={() => {
+                              const cur = ph.subjects ?? [];
+                              const next = active ? cur.filter(x => x !== s) : [...cur, s];
+                              setForm(p => ({
+                                ...p,
+                                phaseEntries: p.phaseEntries.map((ph2, idx) =>
+                                  idx === i ? { ...ph2, subjects: next } : ph2
+                                ),
+                              }));
+                            }}
+                            className="rounded-full border px-2.5 py-0.5 text-[10px] font-semibold transition-all"
+                            style={{
+                              background: active ? `color-mix(in srgb, ${SUBJECT_COLORS[s] ?? "var(--primary)"} 20%, transparent)` : "transparent",
+                              color: active ? (SUBJECT_COLORS[s] ?? "var(--primary)") : "var(--text-muted)",
+                              borderColor: active ? (SUBJECT_COLORS[s] ?? "var(--primary)") : "var(--border)",
+                            }}>
+                            {s}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -671,23 +750,85 @@ export default function VestibularesPage() {
                           )}
                         </div>
 
+                        {/* Seletor de fase atual (só seriados) */}
+                        {v.isSeriado && v.phaseEntries.length > 1 && (() => {
+                          const curIdx = currentPhases[v.id] ?? autoCurrentPhase(v);
+                          const curPhase = v.phaseEntries[curIdx];
+                          return (
+                            <div className="rounded-2xl border-2 px-4 py-3 space-y-3"
+                              style={{ borderColor: v.color, background: `color-mix(in srgb, ${v.color} 6%, transparent)` }}>
+                              <div className="flex items-center justify-between">
+                                <div>
+                                  <p className="text-[10px] font-bold uppercase tracking-wide text-text-muted">Fase em estudo</p>
+                                  <p className="text-base font-extrabold mt-0.5">{curPhase?.label ?? "—"}</p>
+                                  {curPhase?.date && (
+                                    <p className="text-xs text-text-muted">Prova: {formatDate(curPhase.date)}</p>
+                                  )}
+                                </div>
+                                <div className="flex flex-col gap-1">
+                                  {v.phaseEntries.map((ph, idx) => {
+                                    const passed = ph.date && ph.date < todayStr;
+                                    return (
+                                      <button key={idx} onClick={() => setCurrentPhase(v.id, idx)}
+                                        className="rounded-xl px-3 py-1 text-xs font-bold transition-all text-left"
+                                        style={{
+                                          background: idx === curIdx ? v.color : passed ? "var(--surface-2)" : "transparent",
+                                          color: idx === curIdx ? "#fff" : passed ? "var(--text-muted)" : "var(--text-secondary)",
+                                          border: `1px solid ${idx === curIdx ? v.color : "var(--border)"}`,
+                                          textDecoration: passed && idx !== curIdx ? "line-through" : "none",
+                                        }}>
+                                        {ph.label} {passed && idx !== curIdx ? "✓" : ""}
+                                      </button>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                              {curPhase?.subjects && curPhase.subjects.length > 0 && (
+                                <div>
+                                  <p className="mb-1.5 text-[10px] font-semibold uppercase text-text-muted">Matérias desta fase</p>
+                                  <div className="flex flex-wrap gap-1">
+                                    {curPhase.subjects.map(s => (
+                                      <Badge key={s} color={SUBJECT_COLORS[s] ?? "var(--text-muted)"}>{s}</Badge>
+                                    ))}
+                                  </div>
+                                </div>
+                              )}
+                              {curPhase?.content && (
+                                <p className="text-xs text-text-secondary border-t border-border/50 pt-2">{curPhase.content}</p>
+                              )}
+                            </div>
+                          );
+                        })()}
+
                         {/* Fases / datas */}
                         <div>
                           <p className="mb-2 text-xs font-bold text-text-muted uppercase flex items-center gap-1.5">
                             <CalendarDays size={12} /> Datas das provas
                           </p>
                           <div className="space-y-2">
-                            {v.phaseEntries.map((ph) => (
-                              <div key={ph.number} className="rounded-xl border border-border bg-surface-2/40 px-4 py-3">
+                            {v.phaseEntries.map((ph, phIdx) => {
+                              const isPast = ph.date && ph.date < todayStr;
+                              const isCur = v.isSeriado && (currentPhases[v.id] ?? autoCurrentPhase(v)) === phIdx;
+                              return (
+                              <div key={ph.number} className="rounded-xl border px-4 py-3"
+                                style={{
+                                  borderColor: isCur ? v.color : "var(--border)",
+                                  background: isCur ? `color-mix(in srgb, ${v.color} 5%, transparent)` : "color-mix(in srgb, var(--surface-2) 40%, transparent)",
+                                }}>
                                 <div className="flex items-center justify-between">
-                                  <p className="text-sm font-semibold">{ph.label}</p>
+                                  <p className="text-sm font-semibold flex items-center gap-2">
+                                    {ph.label}
+                                    {isCur && <span className="rounded-full px-2 py-0.5 text-[10px] font-bold text-white" style={{ background: v.color }}>em estudo</span>}
+                                    {isPast && !isCur && <span className="text-[10px] text-text-muted">✓ realizada</span>}
+                                  </p>
                                   <p className="text-sm text-text-secondary">{formatDate(ph.date)}</p>
                                 </div>
                                 {ph.content && (
                                   <p className="mt-1.5 text-xs text-text-muted">{ph.content}</p>
                                 )}
                               </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         </div>
 
