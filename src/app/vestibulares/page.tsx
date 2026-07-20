@@ -274,7 +274,26 @@ export default function VestibularesPage() {
   const selected = vestibulares.filter((v) => v.selected);
   const selectedIds = selected.map((v) => v.id);
 
-  const topicsBySubject = getTopicsBySubject(showOnlySelected ? selectedIds : []);
+  // Build subject → vestibular IDs map from actual configured vestibulares
+  // A topic belongs to a vestibular if that vestibular has the topic's subject in its subjects list
+  const subjectToVestIds: Record<string, string[]> = {};
+  const relevantVests = showOnlySelected ? selected : vestibulares;
+  relevantVests.forEach((v) => {
+    v.subjects.forEach((subj) => {
+      if (!subjectToVestIds[subj]) subjectToVestIds[subj] = [];
+      if (!subjectToVestIds[subj].includes(v.id)) subjectToVestIds[subj].push(v.id);
+    });
+  });
+
+  // Compute topicsBySubject: only show topics whose subject is covered by at least one relevant vestibular
+  const topicsBySubject = VESTIBULAR_TOPICS.reduce<Record<string, typeof VESTIBULAR_TOPICS>>((acc, t) => {
+    const vestIds = subjectToVestIds[t.subject] ?? [];
+    if (vestIds.length === 0 && showOnlySelected) return acc; // no vestibular covers this subject
+    if (!acc[t.subject]) acc[t.subject] = [];
+    acc[t.subject].push({ ...t, vestibulares: vestIds.length > 0 ? vestIds : t.vestibulares });
+    return acc;
+  }, {});
+
   const subjects = Object.keys(topicsBySubject);
   const filteredSubjects = filterSubject === "Todos" ? subjects : subjects.filter((s) => s === filterSubject);
 

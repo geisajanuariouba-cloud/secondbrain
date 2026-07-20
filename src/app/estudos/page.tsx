@@ -420,23 +420,24 @@ export default function EstudosPage() {
             <div className="space-y-2">
               {works.map(o => {
                 const expanded = expandedWork === o.id;
+                const rich = o as RichLiteraryWork;
+                const hasDetails = rich.redacaoTheme || rich.notes || rich.link || (o.vestibular?.length > 0);
                 return (
-                  <div key={o.id} className="rounded-xl border border-border bg-surface-2/40">
-                    <div className="flex items-center gap-3 px-3 py-2">
-                      <button onClick={() => toggleWorkRead(o.id)}
+                  <div key={o.id} className="rounded-xl border border-border bg-surface-2/40 overflow-hidden">
+                    <div className={`flex items-center gap-3 px-3 py-2.5 ${hasDetails ? "cursor-pointer hover:bg-surface-hover transition-colors" : ""}`}
+                      onClick={() => hasDetails && setExpandedWork(expanded ? null : o.id)}>
+                      <button onClick={e => { e.stopPropagation(); toggleWorkRead(o.id); }}
                         className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-all ${o.read ? "border-success bg-success" : "border-border-strong"}`}>
                         {o.read && <Check size={10} className="text-white" />}
                       </button>
                       <div className="min-w-0 flex-1">
                         <p className="truncate text-sm font-medium">{o.name}</p>
-                        <p className="truncate text-[11px] text-text-muted">{o.author} · <span className="italic">{(o as RichLiteraryWork).school}</span></p>
+                        <p className="truncate text-[11px] text-text-muted">{o.author} · <span className="italic">{rich.school}</span></p>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
-                        {(o as RichLiteraryWork).rating ? <span className="text-xs text-c-amber">{"★".repeat((o as RichLiteraryWork).rating!)}</span> : null}
-                        <button onClick={() => setExpandedWork(expanded ? null : o.id)} className="text-text-muted hover:text-text">
-                          <ChevronDown size={13} className={`transition-transform ${expanded ? "rotate-180" : ""}`} />
-                        </button>
-                        <button onClick={() => deleteWork(o.id)} className="text-text-muted opacity-50 hover:opacity-100">
+                        {rich.rating ? <span className="text-xs text-c-amber">{"★".repeat(rich.rating)}</span> : null}
+                        {hasDetails && <ChevronDown size={13} className={`text-text-muted transition-transform ${expanded ? "rotate-180" : ""}`} />}
+                        <button onClick={e => { e.stopPropagation(); deleteWork(o.id); }} className="text-text-muted opacity-50 hover:opacity-100">
                           <Trash2 size={12} />
                         </button>
                       </div>
@@ -499,10 +500,12 @@ export default function EstudosPage() {
               {articles.map(a => {
                 const expanded = expandedArticle === a.id;
                 const rich = a as RichArticle;
+                const hasDetails = !!(rich.summary || rich.criticalAnalysis || rich.link || rich.relatedRedacao);
                 return (
-                  <div key={a.id} className="rounded-xl border border-border bg-surface-2/40">
-                    <div className="flex items-center gap-3 px-3 py-2">
-                      <button onClick={() => toggleArticleRead(a.id)}
+                  <div key={a.id} className="rounded-xl border border-border bg-surface-2/40 overflow-hidden">
+                    <div className={`flex items-center gap-3 px-3 py-2.5 ${hasDetails ? "cursor-pointer hover:bg-surface-hover transition-colors" : ""}`}
+                      onClick={() => hasDetails && setExpandedArticle(expanded ? null : a.id)}>
+                      <button onClick={e => { e.stopPropagation(); toggleArticleRead(a.id); }}
                         className={`grid h-5 w-5 shrink-0 place-items-center rounded-full border-2 transition-all ${a.read ? "border-success bg-success" : "border-c-amber"}`}>
                         {a.read && <Check size={10} className="text-white" />}
                       </button>
@@ -512,12 +515,8 @@ export default function EstudosPage() {
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         {a.rating > 0 && <span className="text-xs">{"⭐".repeat(a.rating)}</span>}
-                        {(rich.summary || rich.criticalAnalysis || rich.link) && (
-                          <button onClick={() => setExpandedArticle(expanded ? null : a.id)} className="text-text-muted hover:text-text">
-                            <ChevronDown size={13} className={`transition-transform ${expanded ? "rotate-180" : ""}`} />
-                          </button>
-                        )}
-                        <button onClick={() => deleteArticle(a.id)} className="text-text-muted opacity-50 hover:opacity-100">
+                        {hasDetails && <ChevronDown size={13} className={`text-text-muted transition-transform ${expanded ? "rotate-180" : ""}`} />}
+                        <button onClick={e => { e.stopPropagation(); deleteArticle(a.id); }} className="text-text-muted opacity-50 hover:opacity-100">
                           <Trash2 size={12} />
                         </button>
                       </div>
