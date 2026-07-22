@@ -1014,7 +1014,7 @@ export default function VestibularesPage() {
                     const studied = studiedTopics.has(t.id);
                     const meta = topicMeta[t.id];
                     const urgency = meta?.urgency ?? t.weight;
-                    const difficulty = meta?.difficulty ?? 2;
+                    const difficulty = meta?.difficulty ?? t.difficulty;
                     return (
                       <div key={t.id}
                         className="flex items-start gap-3 rounded-xl border px-3 py-2.5 transition-colors"
