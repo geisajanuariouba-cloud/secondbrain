@@ -20,19 +20,19 @@ export type Subject = {
 };
 
 export const SUBJECTS: Subject[] = [
-  { key: "matematica", name: "Matemática", color: "var(--c-pink)", hours: 24.5, questions: 420, correct: 357, pendingRevisions: 3, mastery: 78 },
-  { key: "portugues", name: "Português", color: "var(--c-amber)", hours: 12.0, questions: 210, correct: 184, pendingRevisions: 1, mastery: 84 },
-  { key: "redacao", name: "Redação", color: "var(--c-blue)", hours: 9.5, questions: 18, correct: 16, pendingRevisions: 0, mastery: 72 },
-  { key: "literatura", name: "Literatura", color: "var(--secondary)", hours: 8.0, questions: 96, correct: 77, pendingRevisions: 2, mastery: 69 },
-  { key: "historia", name: "História", color: "var(--text-secondary)", hours: 14.0, questions: 240, correct: 199, pendingRevisions: 2, mastery: 75 },
-  { key: "geografia", name: "Geografia", color: "var(--warning)", hours: 11.0, questions: 188, correct: 156, pendingRevisions: 1, mastery: 73 },
-  { key: "biologia", name: "Biologia", color: "var(--secondary)", hours: 18.5, questions: 310, correct: 270, pendingRevisions: 4, mastery: 81 },
-  { key: "fisica", name: "Física", color: "var(--c-rose)", hours: 20.0, questions: 280, correct: 210, pendingRevisions: 5, mastery: 64 },
-  { key: "quimica", name: "Química", color: "var(--accent)", hours: 16.0, questions: 256, correct: 205, pendingRevisions: 3, mastery: 70 },
-  { key: "ingles", name: "Inglês", color: "var(--danger)", hours: 6.0, questions: 80, correct: 72, pendingRevisions: 0, mastery: 88 },
-  { key: "sociologia", name: "Sociologia", color: "var(--c-green)", hours: 4.0, questions: 60, correct: 51, pendingRevisions: 1, mastery: 79 },
-  { key: "filosofia", name: "Filosofia", color: "var(--c-lilac)", hours: 4.5, questions: 64, correct: 52, pendingRevisions: 1, mastery: 76 },
-  { key: "atualidades", name: "Atualidades", color: "var(--c-cyan)", hours: 5.0, questions: 24, correct: 21, pendingRevisions: 0, mastery: 80 },
+  { key: "matematica", name: "Matemática", color: "var(--c-pink)", hours: 0, questions: 0, correct: 0, pendingRevisions: 0, mastery: 0 },
+  { key: "portugues", name: "Português", color: "var(--c-amber)", hours: 0, questions: 0, correct: 0, pendingRevisions: 0, mastery: 0 },
+  { key: "redacao", name: "Redação", color: "var(--c-blue)", hours: 0, questions: 0, correct: 0, pendingRevisions: 0, mastery: 0 },
+  { key: "literatura", name: "Literatura", color: "var(--secondary)", hours: 0, questions: 0, correct: 0, pendingRevisions: 0, mastery: 0 },
+  { key: "historia", name: "História", color: "var(--text-secondary)", hours: 0, questions: 0, correct: 0, pendingRevisions: 0, mastery: 0 },
+  { key: "geografia", name: "Geografia", color: "var(--warning)", hours: 0, questions: 0, correct: 0, pendingRevisions: 0, mastery: 0 },
+  { key: "biologia", name: "Biologia", color: "var(--secondary)", hours: 0, questions: 0, correct: 0, pendingRevisions: 0, mastery: 0 },
+  { key: "fisica", name: "Física", color: "var(--c-rose)", hours: 0, questions: 0, correct: 0, pendingRevisions: 0, mastery: 0 },
+  { key: "quimica", name: "Química", color: "var(--accent)", hours: 0, questions: 0, correct: 0, pendingRevisions: 0, mastery: 0 },
+  { key: "ingles", name: "Inglês", color: "var(--danger)", hours: 0, questions: 0, correct: 0, pendingRevisions: 0, mastery: 0 },
+  { key: "sociologia", name: "Sociologia", color: "var(--c-green)", hours: 0, questions: 0, correct: 0, pendingRevisions: 0, mastery: 0 },
+  { key: "filosofia", name: "Filosofia", color: "var(--c-lilac)", hours: 0, questions: 0, correct: 0, pendingRevisions: 0, mastery: 0 },
+  { key: "atualidades", name: "Atualidades", color: "var(--c-cyan)", hours: 0, questions: 0, correct: 0, pendingRevisions: 0, mastery: 0 },
 ];
 
 // ---- Conteúdos (DB Conteúdos) ----
@@ -46,16 +46,7 @@ export type Content = {
   week: string;
 };
 
-export const CONTENTS: Content[] = [
-  { id: "c1", name: "Energia e suas transformações", subject: "fisica", steps: { aula: true, leitura: true, exercicios: true, revisao: false, dominio: false }, questions: 32, correct: 24, week: "Sem 26" },
-  { id: "c2", name: "Funções da linguagem", subject: "portugues", steps: { aula: true, leitura: true, exercicios: true, revisao: true, dominio: true }, questions: 40, correct: 37, week: "Sem 26" },
-  { id: "c3", name: "Citologia", subject: "biologia", steps: { aula: true, leitura: true, exercicios: false, revisao: false, dominio: false }, questions: 18, correct: 15, week: "Sem 26" },
-  { id: "c4", name: "Propriedades da matéria", subject: "quimica", steps: { aula: true, leitura: false, exercicios: false, revisao: false, dominio: false }, questions: 0, correct: 0, week: "Sem 26" },
-  { id: "c5", name: "Geografia econômica", subject: "geografia", steps: { aula: true, leitura: true, exercicios: true, revisao: true, dominio: false }, questions: 28, correct: 23, week: "Sem 25" },
-  { id: "c6", name: "Egito Antigo", subject: "historia", steps: { aula: true, leitura: true, exercicios: true, revisao: false, dominio: false }, questions: 22, correct: 19, week: "Sem 25" },
-  { id: "c7", name: "Mecânica", subject: "fisica", steps: { aula: true, leitura: true, exercicios: true, revisao: true, dominio: true }, questions: 45, correct: 38, week: "Sem 24" },
-  { id: "c8", name: "Álgebra", subject: "matematica", steps: { aula: true, leitura: true, exercicios: true, revisao: false, dominio: false }, questions: 50, correct: 42, week: "Sem 26" },
-];
+export const CONTENTS: Content[] = [];
 
 // ---- Tarefas ----
 export type Task = {
@@ -67,12 +58,7 @@ export type Task = {
   date: string;
 };
 
-export const TASKS: Task[] = [
-  { id: "t1", name: "Lista de exercícios de Mecânica", subject: "fisica", type: "Tarefa", status: "Em andamento", date: "2026-06-29" },
-  { id: "t2", name: "Resumo de Citologia", subject: "biologia", type: "Tarefa", status: "Não iniciada", date: "2026-06-30" },
-  { id: "t3", name: "Redação dissertativa — tecnologia", subject: "redacao", type: "Trabalho", status: "Não iniciada", date: "2026-06-29" },
-  { id: "t4", name: "Apresentação de Sociologia", subject: "sociologia", type: "Apresentação", status: "Concluído", date: "2026-06-27" },
-];
+export const TASKS: Task[] = [];
 
 // ---- Cronograma semanal (DB Cronograma) ----
 export const WEEKLY_SCHEDULE: Record<string, string[]> = {
@@ -95,12 +81,7 @@ export type Revision = {
   due: boolean;
 };
 
-export const REVISIONS: Revision[] = [
-  { id: "r1", content: "Citologia — organelas", subject: "biologia", date: "2026-06-28", type: "Anki", due: true },
-  { id: "r2", content: "Energia — termodinâmica", subject: "fisica", date: "2026-06-28", type: "TAB", due: true },
-  { id: "r3", content: "Álgebra — funções", subject: "matematica", date: "2026-06-29", type: "Anki", due: false },
-  { id: "r4", content: "Egito Antigo", subject: "historia", date: "2026-06-30", type: "TAB", due: false },
-];
+export const REVISIONS: Revision[] = [];
 
 // ---- Simulados ----
 export type Simulation = {
@@ -112,12 +93,7 @@ export type Simulation = {
   correct: number;
 };
 
-export const SIMULATIONS: Simulation[] = [
-  { id: "s1", name: "Simulado ENEM #4", type: "ENEM", date: "2026-06-22", total: 180, correct: 142 },
-  { id: "s2", name: "FUVEST 1ª fase", type: "FUVEST", date: "2026-06-15", total: 90, correct: 64 },
-  { id: "s3", name: "Poliedro Mensal", type: "POLIEDRO", date: "2026-06-08", total: 90, correct: 70 },
-  { id: "s4", name: "Simulado ENEM #3", type: "ENEM", date: "2026-05-25", total: 180, correct: 131 },
-];
+export const SIMULATIONS: Simulation[] = [];
 
 // ---- Vestibulares (countdown) ----
 export type Vestibular = { id: string; name: string; date: string; methods: string[] };
@@ -130,20 +106,11 @@ export const VESTIBULARES: Vestibular[] = [
 
 // ---- Obras literárias ----
 export type LiteraryWork = { id: string; name: string; author: string; school: string; read: boolean; vestibular: string[] };
-export const LITERARY_WORKS: LiteraryWork[] = [
-  { id: "o1", name: "Dom Casmurro", author: "Machado de Assis", school: "Realismo", read: true, vestibular: ["Fuvest", "Unicamp"] },
-  { id: "o2", name: "A Hora da Estrela", author: "Clarice Lispector", school: "Modernismo 3ª Geração", read: true, vestibular: ["Fuvest"] },
-  { id: "o3", name: "Vidas Secas", author: "Érico Veríssimo", school: "Modernismo 2ª Geração", read: false, vestibular: ["Unicamp", "PISM"] },
-  { id: "o4", name: "Quarto de Despejo", author: "Conceição Evaristo", school: "Literatura Contemporânea", read: false, vestibular: ["Fuvest", "PAS"] },
-];
+export const LITERARY_WORKS: LiteraryWork[] = [];
 
 // ---- Artigos (Lista de Leitura) ----
 export type Article = { id: string; title: string; read: boolean; rating: number };
-export const ARTICLES: Article[] = [
-  { id: "a1", title: "Inteligência artificial e o mercado de trabalho", read: true, rating: 4 },
-  { id: "a2", title: "Crise hídrica no Brasil", read: false, rating: 0 },
-  { id: "a3", title: "Saúde mental na adolescência", read: true, rating: 5 },
-];
+export const ARTICLES: Article[] = [];
 
 // ---- Rotina ----
 export type Activity = {
@@ -155,15 +122,7 @@ export type Activity = {
   time?: string;
 };
 
-export const ACTIVITIES: Activity[] = [
-  { id: "ac1", name: "Oração e leitura", timeOfDay: "Manhã", category: "Aproximar de Deus", done: true, time: "06:30" },
-  { id: "ac2", name: "Academia — Treino A", timeOfDay: "Manhã", category: "Meter o shape", done: true, time: "07:30" },
-  { id: "ac3", name: "Bloco de estudo — Física", timeOfDay: "Manhã", category: "Estudos", done: false, time: "09:00" },
-  { id: "ac4", name: "Bloco de estudo — Matemática", timeOfDay: "Tarde", category: "Estudos", done: false, time: "14:00" },
-  { id: "ac5", name: "Skincare", timeOfDay: "Noite", category: "Self care", done: false, time: "21:00" },
-  { id: "ac6", name: "Revisão Anki", timeOfDay: "Noite", category: "Estudos", done: false, time: "22:00" },
-  { id: "ac7", name: "Salão — atendimento", timeOfDay: "Tarde", category: "Trabalho", done: false, time: "16:00" },
-];
+export const ACTIVITIES: Activity[] = [];
 
 // ---- Financeiro ----
 export type Transaction = {
@@ -196,15 +155,7 @@ export const DEFAULT_ACCOUNTS: BankAccount[] = [
   { id: "acc-pagbank",        name: "PagBank",        bank: "PagBank",     type: "Digital",    balance: 0, color: "var(--secondary)",emoji: "🔵" },
 ];
 
-export const TRANSACTIONS: Transaction[] = [
-  { id: "f1", name: "Salão — comissão", value: 1200, type: "Receita", category: "Salão", date: "2026-06-05" },
-  { id: "f2", name: "Mesada", value: 400, type: "Receita", category: "Vó", date: "2026-06-01" },
-  { id: "f3", name: "Plataforma Assaad", value: 149, type: "Gasto fixo", date: "2026-06-03" },
-  { id: "f4", name: "Material de estudo", value: 89, type: "Gasto variável", date: "2026-06-10" },
-  { id: "f5", name: "Lanches", value: 120, type: "Gasto variável", date: "2026-06-14" },
-  { id: "f6", name: "Reserva de emergência", value: 300, type: "Reserva", date: "2026-06-06" },
-  { id: "f7", name: "Academia", value: 99, type: "Gasto fixo", date: "2026-06-02" },
-];
+export const TRANSACTIONS: Transaction[] = [];
 
 // ---- Livros ----
 export type Book = {
@@ -218,12 +169,7 @@ export type Book = {
   rating?: number;
 };
 
-export const BOOKS: Book[] = [
-  { id: "b1", title: "O Poder do Hábito", author: "Charles Duhigg", genre: ["Finanças"], status: "Lendo", currentPage: 180, totalPages: 408, rating: 4 },
-  { id: "b2", title: "A Coragem de Ser Imperfeito", author: "Brené Brown", genre: ["Romance"], status: "Próxima Leitura", currentPage: 0, totalPages: 280 },
-  { id: "b3", title: "Hábitos Atômicos", author: "James Clear", genre: ["Finanças"], status: "Finalizado", currentPage: 320, totalPages: 320, rating: 5 },
-  { id: "b4", title: "A Menina que Roubava Livros", author: "Markus Zusak", genre: ["Ficção"], status: "Pausado", currentPage: 90, totalPages: 480, rating: 4 },
-];
+export const BOOKS: Book[] = [];
 
 // ---- Academia ----
 export type WorkoutExercise = { name: string; muscle: string[]; sets: string; category: "A" | "B" | "C" | "D" | "E" };
@@ -240,27 +186,14 @@ export const EXERCISES: WorkoutExercise[] = [
 
 // ---- Metas ----
 export type Goal = { id: string; name: string; category: string; current: number; target: number };
-export const GOALS: Goal[] = [
-  { id: "g1", name: "Horas de estudo no mês", category: "Crescimento Pessoal", current: 168, target: 220 },
-  { id: "g2", name: "Questões resolvidas", category: "Crescimento Pessoal", current: 2546, target: 3000 },
-  { id: "g3", name: "Reserva financeira", category: "Trabalho", current: 1800, target: 3000 },
-  { id: "g4", name: "Livros lidos no ano", category: "Crescimento Pessoal", current: 7, target: 12 },
-];
+export const GOALS: Goal[] = [];
 
 // ---- Hábitos / streak ----
-export const STUDY_STREAK = 23; // dias consecutivos
-export const WATER_GLASSES = { current: 5, target: 8 };
+export const STUDY_STREAK = 0; // dias consecutivos
+export const WATER_GLASSES = { current: 0, target: 8 };
 
 // ---- Série temporal: horas estudadas por dia (últimos 7 dias) ----
-export const STUDY_TREND = [
-  { day: "Seg", hours: 5.5, questions: 60 },
-  { day: "Ter", hours: 6.0, questions: 72 },
-  { day: "Qua", hours: 4.5, questions: 48 },
-  { day: "Qui", hours: 7.0, questions: 90 },
-  { day: "Sex", hours: 5.0, questions: 55 },
-  { day: "Sáb", hours: 8.0, questions: 110 },
-  { day: "Dom", hours: 3.5, questions: 40 },
-];
+export const STUDY_TREND: { day: string; hours: number; questions: number }[] = [];
 
 // ---- Helpers de agregação ----
 export const totals = {
@@ -292,15 +225,7 @@ export function daysUntil(dateStr: string, from = new Date("2026-06-28")) {
 
 // ---- Água (histórico semanal) ----
 export type WaterDay = { date: string; glasses: number; goal: number };
-export const WATER_HISTORY: WaterDay[] = [
-  { date: "2026-06-22", glasses: 7, goal: 8 },
-  { date: "2026-06-23", glasses: 8, goal: 8 },
-  { date: "2026-06-24", glasses: 6, goal: 8 },
-  { date: "2026-06-25", glasses: 9, goal: 8 },
-  { date: "2026-06-26", glasses: 5, goal: 8 },
-  { date: "2026-06-27", glasses: 8, goal: 8 },
-  { date: "2026-06-28", glasses: 5, goal: 8 },
-];
+export const WATER_HISTORY: WaterDay[] = [];
 
 // ---- Alimentação ----
 export type Meal = {
@@ -311,19 +236,14 @@ export type Meal = {
   calories: number;
   done: boolean;
 };
-export const MEALS_TODAY: Meal[] = [
-  { id: "m1", name: "Café da manhã", time: "07:30", items: ["Ovo mexido", "Fruta", "Suco natural"], calories: 380, done: true },
-  { id: "m2", name: "Almoço", time: "12:30", items: ["Arroz integral", "Feijão", "Frango grelhado", "Salada"], calories: 650, done: true },
-  { id: "m3", name: "Lanche", time: "16:00", items: ["Iogurte com granola", "Banana"], calories: 280, done: false },
-  { id: "m4", name: "Jantar", time: "19:30", items: ["Sopa de legumes", "Pão integral"], calories: 400, done: false },
-];
+export const MEALS_TODAY: Meal[] = [];
 
 // ---- Self Care ----
 export type SkinStep = { id: string; name: string; done: boolean };
 export const SKINCARE_MORNING: SkinStep[] = [
-  { id: "sk-m1", name: "Limpeza facial", done: true },
-  { id: "sk-m2", name: "Tônico", done: true },
-  { id: "sk-m3", name: "Hidratante", done: true },
+  { id: "sk-m1", name: "Limpeza facial", done: false },
+  { id: "sk-m2", name: "Tônico", done: false },
+  { id: "sk-m3", name: "Hidratante", done: false },
   { id: "sk-m4", name: "Protetor solar FPS 50", done: false },
 ];
 export const SKINCARE_EVENING: SkinStep[] = [
@@ -333,20 +253,8 @@ export const SKINCARE_EVENING: SkinStep[] = [
   { id: "sk-e4", name: "Hidratante noturno", done: false },
 ];
 export type MoodEntry = { date: string; mood: 1 | 2 | 3 | 4 | 5; note?: string };
-export const MOOD_LOG: MoodEntry[] = [
-  { date: "2026-06-22", mood: 4 },
-  { date: "2026-06-23", mood: 3, note: "Dia cansativo" },
-  { date: "2026-06-24", mood: 5, note: "Simulado foi ótimo!" },
-  { date: "2026-06-25", mood: 4 },
-  { date: "2026-06-26", mood: 3 },
-  { date: "2026-06-27", mood: 4, note: "Academia foi boa" },
-  { date: "2026-06-28", mood: 4 },
-];
-export const GRATITUDE_LOG: { date: string; items: string[] }[] = [
-  { date: "2026-06-28", items: ["Família presente", "Saúde", "Oportunidade de estudar"] },
-  { date: "2026-06-27", items: ["Amigos", "Música", "Sol bonito"] },
-  { date: "2026-06-26", items: ["Academia", "Minha fé", "Dia produtivo"] },
-];
+export const MOOD_LOG: MoodEntry[] = [];
+export const GRATITUDE_LOG: { date: string; items: string[] }[] = [];
 
 // ---- Hobbies ----
 export type HobbyProject = {
@@ -357,12 +265,7 @@ export type HobbyProject = {
   category: "Negócio" | "Criativo" | "Pessoal";
   color: string;
 };
-export const HOBBY_PROJECTS: HobbyProject[] = [
-  { id: "hp1", name: "Sypoza", description: "Projeto empreendedor em desenvolvimento", status: "Ativo", category: "Negócio", color: "var(--accent)" },
-  { id: "hp2", name: "Optimio", description: "Plataforma de organização pessoal", status: "Ativo", category: "Negócio", color: "var(--secondary)" },
-  { id: "hp3", name: "Canal de estudos", description: "Gravar aulas com OBS e compartilhar método", status: "Ideia", category: "Criativo", color: "var(--c-rose)" },
-  { id: "hp4", name: "Portfólio pessoal", description: "Site com minha trajetória e projetos", status: "Em pausa", category: "Criativo", color: "var(--c-cyan)" },
-];
+export const HOBBY_PROJECTS: HobbyProject[] = [];
 export type MediaItem = {
   id: string;
   title: string;
@@ -371,13 +274,7 @@ export type MediaItem = {
   rating?: number;
   genre?: string;
 };
-export const WATCHLIST: MediaItem[] = [
-  { id: "w1", title: "Grey's Anatomy", type: "Série", status: "Assistindo", rating: 5, genre: "Drama médico" },
-  { id: "w2", title: "The Bear", type: "Série", status: "Lista", genre: "Drama" },
-  { id: "w3", title: "Oppenheimer", type: "Filme", status: "Finalizado", rating: 4, genre: "Histórico" },
-  { id: "w4", title: "Fleabag", type: "Série", status: "Lista", genre: "Comédia dramática" },
-  { id: "w5", title: "Células ao Trabalho", type: "Anime", status: "Finalizado", rating: 5, genre: "Educativo/Médico" },
-];
+export const WATCHLIST: MediaItem[] = [];
 
 // ---- Compras & Viagens ----
 export type ShoppingItem = {
@@ -388,21 +285,9 @@ export type ShoppingItem = {
   price?: number;
   bought: boolean;
 };
-export const SHOPPING_LIST: ShoppingItem[] = [
-  { id: "sh1", name: "Caneta marca texto (kit)", category: "Estudos", priority: "Alta", price: 25, bought: false },
-  { id: "sh2", name: "Caderno A4 pautado", category: "Estudos", priority: "Alta", price: 30, bought: false },
-  { id: "sh3", name: "Protetor solar FPS 50+", category: "Saúde", priority: "Alta", price: 45, bought: false },
-  { id: "sh4", name: "Fone de ouvido (para estudos)", category: "Estudos", priority: "Média", price: 120, bought: false },
-  { id: "sh5", name: "Sérum vitamina C", category: "Pessoal", priority: "Média", price: 80, bought: true },
-  { id: "sh6", name: "Agenda 2027", category: "Estudos", priority: "Baixa", price: 45, bought: false },
-];
+export const SHOPPING_LIST: ShoppingItem[] = [];
 export type WishlistItem = { id: string; name: string; price?: number; link?: string; priority: "Alta" | "Média" | "Baixa" };
-export const WISHLIST: WishlistItem[] = [
-  { id: "wi1", name: "iPad para estudos", price: 4500, priority: "Alta" },
-  { id: "wi2", name: "Kindle", price: 600, priority: "Alta" },
-  { id: "wi3", name: "Tênis de corrida", price: 350, priority: "Média" },
-  { id: "wi4", name: "Câmera para vlogs", price: 1800, priority: "Baixa" },
-];
+export const WISHLIST: WishlistItem[] = [];
 export type Trip = {
   id: string;
   destination: string;
@@ -411,11 +296,7 @@ export type Trip = {
   budget?: number;
   notes?: string;
 };
-export const TRIPS: Trip[] = [
-  { id: "tr1", destination: "São Paulo — provas FUVEST", status: "Planejando", date: "2026-11-22", budget: 500, notes: "Hostel perto da USP" },
-  { id: "tr2", destination: "Rio de Janeiro", status: "Sonho", budget: 1500 },
-  { id: "tr3", destination: "Europa (intercâmbio médico)", status: "Sonho", budget: 15000 },
-];
+export const TRIPS: Trip[] = [];
 
 // ---- Vestibulares-alvo ----
 export type VestibularTarget = {
@@ -698,16 +579,7 @@ export type RecurringExpense = {
   emoji: string;
 };
 
-export const RECURRING_EXPENSES: RecurringExpense[] = [
-  { id: "re1", name: "Academia", value: 99, frequency: "Mensal", category: "Saúde", nextDue: "2026-07-02", paid: false, color: "var(--c-rose)", emoji: "💪" },
-  { id: "re2", name: "Plataforma Assaad", value: 149, frequency: "Mensal", category: "Estudos", nextDue: "2026-07-03", paid: false, color: "var(--secondary)", emoji: "📚" },
-  { id: "re3", name: "Spotify", value: 11.90, frequency: "Mensal", category: "Lazer", nextDue: "2026-07-10", paid: false, color: "var(--c-green)", emoji: "🎵" },
-  { id: "re4", name: "iCloud 50GB", value: 4.90, frequency: "Mensal", category: "Tech", nextDue: "2026-07-15", paid: false, color: "var(--c-blue)", emoji: "☁️" },
-  { id: "re5", name: "Material escolar (kit)", value: 200, frequency: "Semestral", category: "Estudos", nextDue: "2026-07-15", paid: false, color: "var(--secondary)", emoji: "🖊️" },
-  { id: "re6", name: "Matrícula escolar", value: 800, frequency: "Anual", category: "Estudos", nextDue: "2027-01-10", paid: true, color: "var(--secondary)", emoji: "🏫" },
-  { id: "re7", name: "Inscrição ENEM", value: 85, frequency: "Anual", category: "Vestibulares", nextDue: "2026-07-01", paid: false, color: "var(--c-amber)", emoji: "📝" },
-  { id: "re8", name: "Inscrição FUVEST", value: 162, frequency: "Anual", category: "Vestibulares", nextDue: "2026-08-15", paid: false, color: "var(--c-amber)", emoji: "📝" },
-];
+export const RECURRING_EXPENSES: RecurringExpense[] = [];
 
 // ---- Orçamento (% por categoria) ----
 export type BudgetCategory = {
@@ -719,16 +591,7 @@ export type BudgetCategory = {
   color: string;
 };
 
-export const BUDGET_CATEGORIES: BudgetCategory[] = [
-  { id: "bc1", name: "Poupança / Reserva", emoji: "🏦", percentage: 20, spent: 300, color: "var(--success)" },
-  { id: "bc2", name: "Estudos", emoji: "📚", percentage: 20, spent: 238, color: "var(--secondary)" },
-  { id: "bc3", name: "Alimentação", emoji: "🍽️", percentage: 15, spent: 120, color: "var(--c-green)" },
-  { id: "bc4", name: "Saúde & Beleza", emoji: "💆‍♀️", percentage: 10, spent: 45, color: "var(--c-lilac)" },
-  { id: "bc5", name: "Academia", emoji: "💪", percentage: 8, spent: 99, color: "var(--c-rose)" },
-  { id: "bc6", name: "Lazer & Compras", emoji: "🛍️", percentage: 7, spent: 120, color: "var(--c-amber)" },
-  { id: "bc7", name: "Assinaturas / Tech", emoji: "📱", percentage: 5, spent: 16.80, color: "var(--accent)" },
-  { id: "bc8", name: "Outros", emoji: "📌", percentage: 15, spent: 48, color: "var(--text-muted)" },
-];
+export const BUDGET_CATEGORIES: BudgetCategory[] = [];
 
 // ---- Trabalho ----
 export type WorkSession = {
@@ -740,13 +603,7 @@ export type WorkSession = {
   revenue?: number;
 };
 
-export const WORK_SESSIONS: WorkSession[] = [
-  { id: "ws1", project: "Salão", description: "Atendimentos — 4 clientes", date: "2026-06-27", hours: 6, revenue: 380 },
-  { id: "ws2", project: "Salão", description: "Atendimentos — 3 clientes", date: "2026-06-25", hours: 4.5, revenue: 280 },
-  { id: "ws3", project: "Sypoza", description: "Reunião de estratégia", date: "2026-06-26", hours: 1.5 },
-  { id: "ws4", project: "Optimio", description: "Desenvolvimento de funcionalidades", date: "2026-06-24", hours: 2 },
-  { id: "ws5", project: "Salão", description: "Atendimentos — 5 clientes", date: "2026-06-22", hours: 7, revenue: 540 },
-];
+export const WORK_SESSIONS: WorkSession[] = [];
 
 export type WorkTask = {
   id: string;
@@ -757,13 +614,7 @@ export type WorkTask = {
   due?: string;
 };
 
-export const WORK_TASKS: WorkTask[] = [
-  { id: "wt1", project: "Sypoza", name: "Finalizar pitch deck", status: "Em andamento", priority: "Alta", due: "2026-07-05" },
-  { id: "wt2", project: "Optimio", name: "Definir MVP de funcionalidades", status: "Não iniciada", priority: "Alta", due: "2026-07-10" },
-  { id: "wt3", project: "Salão", name: "Renovar estoque de produtos", status: "Não iniciada", priority: "Média", due: "2026-07-01" },
-  { id: "wt4", project: "Sypoza", name: "Pesquisa de mercado", status: "Concluída", priority: "Média" },
-  { id: "wt5", project: "Pessoal", name: "Organizar documentos fiscais", status: "Não iniciada", priority: "Baixa" },
-];
+export const WORK_TASKS: WorkTask[] = [];
 
 // ---- Saúde (corpo + nutrição) ----
 export type BodyMeasurement = {
@@ -774,13 +625,7 @@ export type BodyMeasurement = {
   hip?: number; // cm
 };
 
-export const BODY_MEASUREMENTS: BodyMeasurement[] = [
-  { date: "2026-06-01", weight: 58.5, bodyFat: 22, waist: 68, hip: 94 },
-  { date: "2026-06-08", weight: 58.2, bodyFat: 21.8, waist: 67.5, hip: 93.5 },
-  { date: "2026-06-15", weight: 57.8, bodyFat: 21.5, waist: 67, hip: 93 },
-  { date: "2026-06-22", weight: 57.6, bodyFat: 21.2, waist: 66.5, hip: 92.5 },
-  { date: "2026-06-28", weight: 57.4, bodyFat: 21.0, waist: 66, hip: 92 },
-];
+export const BODY_MEASUREMENTS: BodyMeasurement[] = [];
 
 export const DIET_GOALS = { calories: 1900, protein: 120, carbs: 220, fat: 60 };
 
@@ -799,26 +644,7 @@ export type ProductReview = {
   notes?: string;
 };
 
-export const PRODUCT_REVIEWS: ProductReview[] = [
-  {
-    id: "pr1", name: "Sérum Vitamina C", brand: "Maxgreen", category: "Sérum",
-    rating: 5, pros: ["Clareia manchas", "Textura leve", "Absorção rápida"],
-    cons: ["Preço alto", "Embalagem pequena"], wouldBuyAgain: true,
-    price: 89, usingSince: "2026-04-01", notes: "Melhor sérum que já usei. Manchas bem mais claras após 2 meses."
-  },
-  {
-    id: "pr2", name: "Hidratante Facial Oil Control", brand: "Neutrogena", category: "Hidratante",
-    rating: 4, pros: ["Não emplasta", "Bom pra pele oleosa", "Preço acessível"],
-    cons: ["Cheiro levemente medicinal"], wouldBuyAgain: true,
-    price: 35, usingSince: "2026-05-01"
-  },
-  {
-    id: "pr3", name: "Protetor Solar FPS 60", brand: "La Roche-Posay", category: "Protetor",
-    rating: 3, pros: ["Alta proteção", "Não mancha roupa"],
-    cons: ["Esbranquiça a pele", "Pesado demais"], wouldBuyAgain: false,
-    price: 88, notes: "Bom produto mas deixou pele com aparência branca. Vou testar outro."
-  },
-];
+export const PRODUCT_REVIEWS: ProductReview[] = [];
 
 // ---- Histórico de consultas IA ----
 export type ConsultationMessage = { role: "user" | "ai"; content: string; time: string };
@@ -830,21 +656,4 @@ export type ConsultationSession = {
   messages: ConsultationMessage[];
 };
 
-export const CONSULTATION_SESSIONS: ConsultationSession[] = [
-  {
-    id: "cs1", persona: "Mentor de Estudos", title: "Estratégia para FUVEST",
-    date: "2026-06-25",
-    messages: [
-      { role: "user", content: "Meu maior problema é Física. Como devo organizar meus estudos para a FUVEST?", time: "14:30" },
-      { role: "ai", content: "Para a FUVEST, Física representa 10-12 questões na 1ª fase. Com base no seu histórico (64% de acerto), recomendo focar em Mecânica (Cinemática, Dinâmica, Trabalho/Energia) — esses temas correspondem a ~40% das questões de Física na FUVEST. Bloco diário de 2h + 20 questões de provas anteriores.", time: "14:31" },
-    ],
-  },
-  {
-    id: "cs2", persona: "Nutricionista", title: "Alimentação para provas",
-    date: "2026-06-20",
-    messages: [
-      { role: "user", content: "O que comer antes de um simulado para ter máxima concentração?", time: "09:00" },
-      { role: "ai", content: "Antes do simulado: refeição ~2h antes com carboidrato complexo + proteína leve (aveia + ovo, por ex.). Durante: água + castanhas/chocolate 70%. Evite açúcar simples — causa pico e queda brusca de energia. Cafeína ok até 200mg se tolerada.", time: "09:01" },
-    ],
-  },
-];
+export const CONSULTATION_SESSIONS: ConsultationSession[] = [];

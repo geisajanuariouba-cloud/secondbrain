@@ -11,38 +11,12 @@ import { BODY_MEASUREMENTS, DIET_GOALS } from "@/lib/data";
 const TABS = ["Corpo", "Nutrição", "Treino"] as const;
 type Tab = typeof TABS[number];
 
-const MEALS_TEMPLATE = [
-  {
-    id: "cafe", label: "☀️ Café da manhã", time: "07:00",
-    items: ["1 fatia de pão integral", "2 ovos mexidos", "1 fruta"],
-    calories: 380, protein: 22, carbs: 40, fat: 12,
-  },
-  {
-    id: "almoco", label: "🌿 Almoço", time: "12:30",
-    items: ["Arroz integral (4 col)", "Feijão (1 concha)", "Frango grelhado 150g", "Salada verde"],
-    calories: 620, protein: 45, carbs: 72, fat: 14,
-  },
-  {
-    id: "lanche", label: "🍎 Lanche", time: "15:30",
-    items: ["1 iogurte grego", "Castanhas 30g"],
-    calories: 220, protein: 14, carbs: 18, fat: 9,
-  },
-  {
-    id: "jantar", label: "🌙 Jantar", time: "19:30",
-    items: ["Peixe grelhado 150g", "Legumes no vapor", "Batata-doce 100g"],
-    calories: 400, protein: 39, carbs: 42, fat: 8,
-  },
-];
+const MEALS_TEMPLATE: {
+  id: string; label: string; time: string; items: string[];
+  calories: number; protein: number; carbs: number; fat: number;
+}[] = [];
 
-const WORKOUT_PLAN = [
-  { day: "Seg", name: "Treino A — Peito + Tríceps", exercises: ["Supino reto 4x10", "Supino inclinado 3x12", "Crucifixo 3x12", "Tríceps corda 4x12", "Tríceps testa 3x10"] },
-  { day: "Ter", name: "Treino B — Costas + Bíceps", exercises: ["Puxada frente 4x10", "Remada baixa 4x10", "Pullover 3x12", "Rosca direta 4x12", "Rosca martelo 3x10"] },
-  { day: "Qua", name: "Treino C — Pernas", exercises: ["Agachamento 4x10", "Leg press 4x12", "Cadeira extensora 3x12", "Mesa flexora 3x12", "Panturrilha 4x15"] },
-  { day: "Qui", name: "Treino D — Ombros + Abdômen", exercises: ["Desenvolvimento halter 4x10", "Elevação lateral 4x12", "Elevação frontal 3x12", "Abdominal supra 4x20", "Prancha 3x45s"] },
-  { day: "Sex", name: "Cardio + Core", exercises: ["30min esteira moderado", "Abdominal bicicleta 3x20", "Crunch 3x20", "Prancha lateral 3x30s"] },
-  { day: "Sáb", name: "Descanso ativo", exercises: ["Alongamento 20min", "Caminhada leve 30min"] },
-  { day: "Dom", name: "Descanso total", exercises: [] },
-];
+const WORKOUT_PLAN: { day: string; name: string; exercises: string[] }[] = [];
 
 // ── Corpo ──
 function CorpoTab() {

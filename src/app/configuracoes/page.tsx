@@ -558,7 +558,7 @@ export default function ConfiguracoesPage() {
                     <div className="max-w-[85%] rounded-2xl rounded-tr-sm p-3 text-xs leading-relaxed" style={{ background: "#25D36620", border: "1px solid #25D36630" }}>
                       <p className="font-bold" style={{ color: "#25D366" }}>Second Brain 🧠</p>
                       <p className="mt-1 text-text-secondary whitespace-pre-line">
-                        {`💸 *Nova transação detectada!*\n\nDescrição: PIX Enviado — João\nValor: R$ 50,00\nBanco: Nubank\n\nQual é a categoria?\n\n${categories.map((c, i) => `${i + 1}️⃣ ${c.name}`).join("\n")}\n0️⃣ Outra — me diga qual`}
+                        {`💸 *Nova transação detectada!*\n\nDescrição: PIX Enviado\nValor: R$ 50,00\nBanco: Nubank\n\nQual é a categoria?\n\n${categories.map((c, i) => `${i + 1}️⃣ ${c.name}`).join("\n")}\n0️⃣ Outra — me diga qual`}
                       </p>
                     </div>
                   </div>
