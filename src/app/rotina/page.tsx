@@ -11,6 +11,8 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress";
 import { WATER_GLASSES, STUDY_STREAK, REVISIONS } from "@/lib/data";
+import { pendingOpenRegistrations, type VestibularRegistration } from "@/lib/vestibulares-registrations";
+import { CalendarClock } from "lucide-react";
 import {
   DEFAULT_HABITS_BY_DAY, ALL_DAYS, DAY_ABBR, getTodayKey,
   type DayKey, type Habit, type HabitCategory, type TimeOfDay,
@@ -129,6 +131,8 @@ export default function RotinaPage() {
 
   const [tab, setTab] = useState<Tab>("rotina");
   const [selectedDay, setSelectedDay] = useState<DayKey>(todayKey);
+  const [openRegistrations, setOpenRegistrations] = useState<VestibularRegistration[]>([]);
+  useEffect(() => { setOpenRegistrations(pendingOpenRegistrations()); }, []);
 
   // Rotina view state
   const [checked, setChecked] = useState<Record<string, boolean>>({});
@@ -337,6 +341,34 @@ export default function RotinaPage() {
       {/* ─── ROTINA VIEW ─────────────────────────────────────────────── */}
       {tab === "rotina" && (
         <>
+          {/* Inscrições abertas — lembrete automático */}
+          {openRegistrations.length > 0 && (
+            <Card glow>
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="grid h-11 w-11 shrink-0 place-items-center rounded-xl" style={{ background: "color-mix(in srgb, var(--danger) 15%, transparent)", color: "var(--danger)" }}>
+                  <CalendarClock size={20} />
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold">
+                    {openRegistrations.length === 1
+                      ? `Inscrição aberta: ${openRegistrations[0].name}!`
+                      : `${openRegistrations.length} inscrições abertas!`}
+                  </p>
+                  <p className="text-xs text-text-muted">
+                    {openRegistrations.map((v) => v.name).join(", ")} — não esqueça de se inscrever.
+                  </p>
+                </div>
+                <a
+                  href="/vestibulares"
+                  className="rounded-xl px-3 py-1.5 text-xs font-semibold text-white transition-opacity hover:opacity-90"
+                  style={{ background: "var(--danger)" }}
+                >
+                  Ver e marcar
+                </a>
+              </div>
+            </Card>
+          )}
+
           {/* Seletor de dia */}
           <Card>
             <div className="flex flex-wrap items-center gap-2">

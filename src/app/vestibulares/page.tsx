@@ -5,12 +5,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy, ChevronDown, ChevronUp, BookOpen, Star, Filter,
   Plus, Pencil, Trash2, X, Save, CalendarDays, Layers, FileText, Loader2,
-  CheckCircle2, Circle, Zap, Brain,
+  CheckCircle2, Circle, Zap, Brain, ClipboardList,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { VESTIBULARES_TARGETS } from "@/lib/data";
+import { registrationStatus } from "@/lib/vestibulares-registrations";
 import { VESTIBULAR_TOPICS, getTopicsBySubject } from "@/lib/vestibular-content";
 import { daysUntil } from "@/lib/data";
 
@@ -43,6 +44,12 @@ type VestibularEntry = {
   secondDate?: string;
   phases: number;
   type: string;
+  // Inscrições
+  registered: boolean;
+  registrationOpensAt?: string;
+  registrationClosesAt?: string;
+  registrationNote?: string;
+  registrationUrl?: string;
 };
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -82,8 +89,14 @@ function toEntry(v: (typeof VESTIBULARES_TARGETS)[0]): VestibularEntry {
     subjects: v.subjects, programmaticContent: "", notes: "",
     medicineAvg: v.medicineAvg, medicineCutNote: v.medicineCutNote,
     date: v.date, secondDate: v.secondDate, phases: v.phases, type: v.type,
+    registered: false,
+    registrationOpensAt: v.registrationOpensAt,
+    registrationClosesAt: v.registrationClosesAt,
+    registrationNote: v.registrationNote,
+    registrationUrl: v.registrationUrl,
   };
 }
+
 
 function entryDaysUntil(v: VestibularEntry): number {
   const dates = v.phaseEntries.map((p) => p.date).filter(Boolean);
@@ -108,6 +121,7 @@ function emptyForm(): Omit<VestibularEntry, "id"> {
     phaseEntries: [{ number: 1, label: "Prova única", date: "", content: "" }],
     subjects: [], programmaticContent: "", notes: "",
     date: "", phases: 1, type: "Vestibular próprio",
+    registered: false,
   };
 }
 
@@ -147,8 +161,20 @@ export default function VestibularesPage() {
       const savedList: VestibularEntry[] = JSON.parse(saved);
       const savedMap = new Map(savedList.map(v => [v.id, v]));
       const baseIds = new Set(base.map(v => v.id));
-      // Base entries: use saved version (user customizations) if exists, else fresh base
-      const merged = base.map(v => savedMap.get(v.id) ?? v);
+      // Base entries: use saved version (user customizations) if exists, else fresh base.
+      // Registration metadata always refreshes from base (data.ts) — it's maintained by the
+      // system, not user-edited, so a stale localStorage snapshot must never mask a new date.
+      const merged = base.map(v => {
+        const s = savedMap.get(v.id);
+        if (!s) return v;
+        return {
+          ...s,
+          registrationOpensAt: v.registrationOpensAt,
+          registrationClosesAt: v.registrationClosesAt,
+          registrationNote: v.registrationNote,
+          registrationUrl: v.registrationUrl,
+        };
+      });
       // User-added entries not in base
       const userAdded = savedList.filter(v => !baseIds.has(v.id));
       entries = [...merged, ...userAdded];
@@ -219,6 +245,9 @@ export default function VestibularesPage() {
 
   const toggleSelected = (id: string) =>
     save(vestibulares.map((v) => v.id === id ? { ...v, selected: !v.selected } : v));
+
+  const toggleRegistered = (id: string) =>
+    save(vestibulares.map((v) => v.id === id ? { ...v, registered: !v.registered } : v));
 
   const deleteVest = (id: string) =>
     save(vestibulares.filter((v) => v.id !== id));
@@ -348,6 +377,8 @@ export default function VestibularesPage() {
   const nextVestibular = selected
     .filter((v) => entryDaysUntil(v) > 0)
     .sort((a, b) => entryDaysUntil(a) - entryDaysUntil(b))[0];
+
+  const registrationsPending = selected.filter((v) => registrationStatus(v, todayStr) === "open");
 
   // ── Shared form JSX ─────────────────────────────────────────────────────────
 
@@ -628,6 +659,64 @@ export default function VestibularesPage() {
           </div>
         </Card>
       )}
+
+      {/* Inscrições */}
+      <Card>
+        <SectionTitle>
+          <span className="flex items-center gap-2">
+            <ClipboardList size={16} style={{ color: "var(--c-amber)" }} />
+            Inscrições
+          </span>
+        </SectionTitle>
+        <p className="mt-1 text-xs text-text-muted">
+          {registrationsPending.length === 0
+            ? "Tudo certo — nenhuma inscrição pendente no momento."
+            : `${registrationsPending.length} inscrição${registrationsPending.length > 1 ? "ões" : ""} pendente${registrationsPending.length > 1 ? "s" : ""}.`}
+        </p>
+        <div className="mt-3 space-y-2">
+          {selected.map((v) => {
+            const status = registrationStatus(v, todayStr);
+            const statusMeta = {
+              registered: { label: "Inscrita", color: "var(--success)", icon: CheckCircle2 },
+              open: { label: "Inscrições abertas!", color: "var(--danger)", icon: Zap },
+              upcoming: { label: `Abre em ${formatDate(v.registrationOpensAt!)}`, color: "var(--c-amber)", icon: CalendarDays },
+              unknown: { label: v.registrationNote ?? "Ainda sem informação", color: "var(--text-muted)", icon: Circle },
+            }[status];
+            const Icon = statusMeta.icon;
+            return (
+              <div key={v.id} className="flex items-center gap-3 rounded-xl border border-border px-3 py-2.5">
+                <div className="h-3 w-3 shrink-0 rounded-full" style={{ background: v.color }} />
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-bold">{v.name}</p>
+                  <p className="flex items-center gap-1 text-xs" style={{ color: statusMeta.color }}>
+                    <Icon size={12} /> {statusMeta.label}
+                    {v.registrationUrl && status !== "registered" && (
+                      <a href={v.registrationUrl} target="_blank" rel="noopener noreferrer" className="ml-1 underline underline-offset-2 hover:text-text">
+                        site oficial
+                      </a>
+                    )}
+                  </p>
+                </div>
+                <button
+                  onClick={() => toggleRegistered(v.id)}
+                  className="flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[11px] font-semibold transition-colors"
+                  style={{
+                    borderColor: v.registered ? "var(--success)" : "var(--border)",
+                    color: v.registered ? "var(--success)" : "var(--text-muted)",
+                    background: v.registered ? "color-mix(in srgb, var(--success) 12%, transparent)" : "transparent",
+                  }}
+                >
+                  {v.registered ? <CheckCircle2 size={12} /> : <Circle size={12} />}
+                  {v.registered ? "Inscrita" : "Marcar como feita"}
+                </button>
+              </div>
+            );
+          })}
+          {selected.length === 0 && (
+            <p className="text-sm text-text-muted">Nenhum vestibular selecionado ainda.</p>
+          )}
+        </div>
+      </Card>
 
       {/* Lista de vestibulares */}
       <Card>

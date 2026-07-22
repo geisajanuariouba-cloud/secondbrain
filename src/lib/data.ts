@@ -318,6 +318,11 @@ export type VestibularTarget = {
   phaseDates?: string[];
   phaseSubjects?: string[][];
   phaseContents?: string[];
+  // Inscrições — preenchido conforme edital de cada ciclo é divulgado
+  registrationOpensAt?: string; // data confirmada de abertura das inscrições (YYYY-MM-DD)
+  registrationClosesAt?: string;
+  registrationNote?: string; // status textual quando a data ainda não é conhecida
+  registrationUrl?: string;
 };
 
 const MOD1_SUBJECTS = ["Biologia", "Química", "Física", "Matemática", "Português", "Literatura", "Redação", "História", "Geografia", "Inglês"];
@@ -367,6 +372,8 @@ export const VESTIBULARES_TARGETS: VestibularTarget[] = [
       [...ALL_SUBJECTS],
     ],
     phaseContents: [PISM_MOD1, PISM_MOD2, PISM_MOD3],
+    registrationNote: "Inscrições ainda não abertas — normalmente abrem ~2 meses antes da prova de dezembro.",
+    registrationUrl: "https://www.ufjf.br/copese/",
   },
   {
     id: "pases-ufv", name: "PASES", fullName: "Programa de Avaliação Seriada para Ingresso na UFV",
@@ -385,6 +392,8 @@ export const VESTIBULARES_TARGETS: VestibularTarget[] = [
       [...ALL_SUBJECTS],
     ],
     phaseContents: [PASES_MOD1, PASES_MOD2, PASES_MOD3],
+    registrationNote: "Inscrições ainda não abertas — edital do triênio 2026-2028 ainda não publicado.",
+    registrationUrl: "https://www.cebraspe.org.br/concursos/pases_1_ufv_25_27",
   },
   {
     id: "psas-ufmg", name: "Seriado UFMG", fullName: "Seriado UFMG — Processo Seletivo de Avaliação Seriada",
@@ -403,6 +412,8 @@ export const VESTIBULARES_TARGETS: VestibularTarget[] = [
       ["Linguagens", "Matemática", "Ciências da Natureza", "Ciências Humanas"],
     ],
     phaseContents: [PSAS_MOD1, PSAS_MOD2, PSAS_MOD3],
+    registrationNote: "Inscrições ainda não abertas — edital do ciclo 2026-2028 ainda não publicado.",
+    registrationUrl: "https://www.ufmg.br/seriadoufmg/",
   },
   {
     id: "pas-ufla", name: "PAS", fullName: "Processo de Avaliação Seriada — UFLA",
@@ -462,6 +473,8 @@ export const VESTIBULARES_TARGETS: VestibularTarget[] = [
     subjects: ["Português", "Literatura", "Matemática", "Física", "Química", "Biologia", "História", "Geografia", "Inglês", "Redação"],
     phaseLabels: ["1ª Fase (objetiva)", "2ª Fase (dissertativa + redação)"],
     phaseContents: [FUVEST_CONTENT, FUVEST_CONTENT],
+    registrationNote: "Inscrições ainda não abertas — normalmente abrem em agosto, para prova em novembro.",
+    registrationUrl: "https://www.fuvest.br/",
   },
   {
     id: "unicamp", name: "UNICAMP", fullName: "Vestibular COMVEST — UNICAMP",
