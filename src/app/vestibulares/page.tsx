@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { VESTIBULARES_TARGETS } from "@/lib/data";
 import { VESTIBULAR_TOPICS, getTopicsBySubject } from "@/lib/vestibular-content";
 import { daysUntil } from "@/lib/data";
@@ -569,12 +570,7 @@ export default function VestibularesPage() {
         {/* Selecionado toggle */}
         <div className="flex items-center gap-3">
           <span className="text-sm text-text-muted">Estou me preparando para este vestibular</span>
-          <button onClick={() => setForm((p) => ({ ...p, selected: !p.selected }))}
-            className="relative h-6 w-11 shrink-0 rounded-full transition-colors"
-            style={{ background: form.selected ? "var(--primary)" : "var(--border-strong)" }}>
-            <span className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform"
-              style={{ transform: form.selected ? "translateX(20px)" : "translateX(2px)" }} />
-          </button>
+          <Switch on={form.selected} onToggle={() => setForm((p) => ({ ...p, selected: !p.selected }))} ariaLabel="Estou me preparando para este vestibular" />
         </div>
 
         {/* Action buttons */}
@@ -669,14 +665,9 @@ export default function VestibularesPage() {
                   onClick={() => !isEditing && setExpandedVest(isExpanded ? null : v.id)}
                 >
                   {/* Selected toggle */}
-                  <button
-                    onClick={(e) => { e.stopPropagation(); toggleSelected(v.id); }}
-                    className="relative h-6 w-11 shrink-0 rounded-full transition-colors"
-                    style={{ background: v.selected ? "var(--primary)" : "var(--border-strong)" }}
-                  >
-                    <span className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform"
-                      style={{ transform: v.selected ? "translateX(20px)" : "translateX(2px)" }} />
-                  </button>
+                  <div onClick={(e) => e.stopPropagation()}>
+                    <Switch on={v.selected} onToggle={() => toggleSelected(v.id)} ariaLabel={`Selecionar ${v.name}`} />
+                  </div>
 
                   <div className="h-3 w-3 shrink-0 rounded-full" style={{ background: v.color }} />
 
@@ -905,12 +896,7 @@ export default function VestibularesPage() {
           ))}
           <div className="ml-auto flex items-center gap-2">
             <span className="text-xs text-text-muted">Só dos selecionados</span>
-            <button onClick={() => setShowOnlySelected(!showOnlySelected)}
-              className="relative h-5 w-10 rounded-full transition-colors"
-              style={{ background: showOnlySelected ? "var(--primary)" : "var(--border-strong)" }}>
-              <span className="absolute top-0.5 h-4 w-4 rounded-full bg-white transition-transform"
-                style={{ transform: showOnlySelected ? "translateX(20px)" : "translateX(2px)" }} />
-            </button>
+            <Switch on={showOnlySelected} onToggle={() => setShowOnlySelected(!showOnlySelected)} size="sm" ariaLabel="Só dos selecionados" />
           </div>
         </div>
 

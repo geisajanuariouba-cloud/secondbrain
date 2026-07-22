@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
+import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
 
 type Tab = "geral" | "notificacoes" | "automacoes" | "dados";
@@ -460,13 +461,11 @@ export default function ConfiguracoesPage() {
                         <p className="text-sm font-semibold">{bank.bank}</p>
                         <p className="text-[11px] text-text-muted font-mono">{bank.senderPattern}</p>
                       </div>
-                      <button
-                        onClick={() => setBankPatterns((prev) => prev.map((b) => b.id === bank.id ? { ...b, enabled: !b.enabled } : b))}
-                        className="relative h-6 w-11 shrink-0 rounded-full transition-colors"
-                        style={{ background: bank.enabled ? "var(--primary)" : "var(--border-strong)" }}
-                      >
-                        <span className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform" style={{ transform: bank.enabled ? "translateX(20px)" : "translateX(2px)" }} />
-                      </button>
+                      <Switch
+                        on={bank.enabled}
+                        onToggle={() => setBankPatterns((prev) => prev.map((b) => b.id === bank.id ? { ...b, enabled: !b.enabled } : b))}
+                        ariaLabel={`Ativar padrão de ${bank.bank}`}
+                      />
                     </div>
                   ))}
                 </div>
@@ -840,9 +839,7 @@ function Toggle({ label, defaultOn = false }: { label: string; defaultOn?: boole
   return (
     <div className="flex items-center justify-between rounded-xl bg-surface-2/40 px-4 py-3">
       <span className="text-sm font-medium">{label}</span>
-      <button onClick={() => setOn(!on)} className="relative h-6 w-11 rounded-full transition-colors" style={{ background: on ? "var(--primary)" : "var(--border-strong)" }}>
-        <span className="absolute top-0.5 h-5 w-5 rounded-full bg-white transition-transform" style={{ transform: on ? "translateX(20px)" : "translateX(2px)" }} />
-      </button>
+      <Switch on={on} onToggle={() => setOn(!on)} ariaLabel={label} />
     </div>
   );
 }
