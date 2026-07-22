@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, cloneElement } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Trophy, ChevronDown, ChevronUp, BookOpen, Star, Filter,
@@ -351,7 +351,7 @@ export default function VestibularesPage() {
 
   // ── Shared form JSX ─────────────────────────────────────────────────────────
 
-  const FormPanel = () => (
+  const formPanel = (
     <motion.div
       initial={{ opacity: 0, height: 0 }}
       animate={{ opacity: 1, height: "auto" }}
@@ -648,7 +648,7 @@ export default function VestibularesPage() {
 
         {/* Form de adicionar */}
         <AnimatePresence>
-          {addingNew && <FormPanel key="add-form" />}
+          {addingNew && cloneElement(formPanel, { key: "add-form" })}
         </AnimatePresence>
 
         <div className="mt-3 space-y-2">
@@ -709,7 +709,7 @@ export default function VestibularesPage() {
                 <AnimatePresence>
                   {isEditing && (
                     <div className="border-t border-border px-4 pb-4">
-                      <FormPanel key={`edit-${v.id}`} />
+                      {cloneElement(formPanel, { key: `edit-${v.id}` })}
                     </div>
                   )}
                 </AnimatePresence>
