@@ -38,10 +38,10 @@ function CorpoTab() {
       {/* Stats */}
       <div className="grid gap-4 sm:grid-cols-4">
         {[
-          { label: "Peso atual", value: `${latest.weight} kg`, color: "var(--c-rose)" },
-          { label: "% Gordura", value: `${latest.bodyFat}%`, color: "var(--c-amber)" },
-          { label: "Cintura", value: `${latest.waist} cm`, color: "var(--secondary)" },
-          { label: "Quadril", value: `${latest.hip} cm`, color: "var(--c-lilac)" },
+          { label: "Peso atual", value: latest ? `${latest.weight} kg` : "—", color: "var(--c-rose)" },
+          { label: "% Gordura", value: latest?.bodyFat != null ? `${latest.bodyFat}%` : "—", color: "var(--c-amber)" },
+          { label: "Cintura", value: latest?.waist != null ? `${latest.waist} cm` : "—", color: "var(--secondary)" },
+          { label: "Quadril", value: latest?.hip != null ? `${latest.hip} cm` : "—", color: "var(--c-lilac)" },
         ].map((kpi) => (
           <Card key={kpi.label}>
             <p className="text-xs text-text-muted">{kpi.label}</p>
@@ -53,6 +53,9 @@ function CorpoTab() {
       {/* Gráfico de peso */}
       <Card>
         <SectionTitle>Evolução de peso</SectionTitle>
+        {measurements.length === 0 && (
+          <p className="mt-3 text-sm text-text-muted">Nenhuma medida registrada ainda.</p>
+        )}
         <div className="mt-4 flex items-end justify-between gap-2" style={{ height: 120 }}>
           {measurements.map((m, i) => {
             const weights = measurements.map((x) => x.weight);
@@ -152,6 +155,9 @@ function NutricaoTab() {
 
       {/* Refeições */}
       <div className="space-y-3">
+        {MEALS_TEMPLATE.length === 0 && (
+          <p className="text-sm text-text-muted">Nenhuma refeição cadastrada ainda.</p>
+        )}
         {MEALS_TEMPLATE.map((meal) => {
           const checked = checkedMeals.includes(meal.id);
           return (
@@ -233,6 +239,9 @@ function TreinoTab() {
       {/* Plano semanal */}
       <Card>
         <SectionTitle>Plano semanal</SectionTitle>
+        {WORKOUT_PLAN.length === 0 && (
+          <p className="mt-3 text-sm text-text-muted">Nenhum plano de treino cadastrado ainda.</p>
+        )}
         <div className="mt-3 space-y-2">
           {WORKOUT_PLAN.map((plan) => {
             const isToday = plan.day === todayShort;
