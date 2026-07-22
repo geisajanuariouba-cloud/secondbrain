@@ -515,7 +515,7 @@ export default function RotinaPage() {
                             ✓
                           </button>
                           <div className="min-w-0 flex-1">
-                            <p className={`truncate text-sm ${e.done ? "text-text-muted line-through" : "font-medium"}`}>
+                            <p title={e.name} className={`text-sm ${e.done ? "text-text-muted line-through" : "font-medium"}`}>
                               {e.name}
                             </p>
                             <p className="flex items-center gap-1 text-[11px] text-text-muted">
@@ -932,7 +932,7 @@ export default function RotinaPage() {
                         >
                           <span className="text-xs tabular-nums text-text-muted w-10 shrink-0">{h.time}</span>
                           <div className="min-w-0 flex-1">
-                            <p className="truncate text-sm font-medium">{h.name}</p>
+                            <p title={h.name} className="text-sm font-medium">{h.name}</p>
                             <Badge color={CATEGORY_COLORS[h.category] ?? "var(--text-muted)"}>{h.category}</Badge>
                           </div>
                           <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -1063,7 +1063,7 @@ function HabitRow({
         ✓
       </button>
       <div className="min-w-0 flex-1">
-        <p className={`truncate text-sm ${checked ? "text-text-muted line-through" : "font-medium"}`}>
+        <p title={habit.name} className={`text-sm ${checked ? "text-text-muted line-through" : "font-medium"}`}>
           {habit.name}
         </p>
         <p className="text-[11px] text-text-muted">{habit.time}</p>
