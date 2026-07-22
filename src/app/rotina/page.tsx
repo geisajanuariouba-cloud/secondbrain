@@ -60,8 +60,19 @@ function getTodayDate() {
   return new Date().toISOString().split("T")[0];
 }
 
+// Sempre que a rotina padrão (DEFAULT_HABITS_BY_DAY) for reestruturada, incrementar esta versão.
+// Isso descarta customizações antigas salvas no navegador para que a nova rotina padrão apareça
+// de fato, em vez de ficar presa atrás de uma versão anterior salva em localStorage.
+const HABITS_SCHEMA_VERSION = "2026-07-22.2";
+
 function loadDefaultHabits(day: DayKey): Habit[] {
   try {
+    const storedVersion = localStorage.getItem("rotina-default-version");
+    if (storedVersion !== HABITS_SCHEMA_VERSION) {
+      ALL_DAYS.forEach((d) => localStorage.removeItem(`rotina-default-${d}`));
+      localStorage.setItem("rotina-default-version", HABITS_SCHEMA_VERSION);
+      return DEFAULT_HABITS_BY_DAY[day];
+    }
     const saved = localStorage.getItem(`rotina-default-${day}`);
     if (saved) return JSON.parse(saved) as Habit[];
   } catch { /* ignore */ }
