@@ -372,8 +372,11 @@ export const VESTIBULARES_TARGETS: VestibularTarget[] = [
       [...ALL_SUBJECTS],
     ],
     phaseContents: [PISM_MOD1, PISM_MOD2, PISM_MOD3],
-    registrationNote: "Inscrições ainda não abertas — normalmente abrem ~2 meses antes da prova de dezembro.",
-    registrationUrl: "https://www.ufjf.br/copese/",
+    // CONFIRMADO — Edital 10/2026 (COPESE/UFJF), PISM 2027: inscrições 27/07 15h a 14/08/2026 18h, pagamento até 17/08
+    registrationOpensAt: "2026-07-27",
+    registrationClosesAt: "2026-08-14",
+    registrationNote: "Inscrições abertas de 27/07/2026 (15h) a 14/08/2026 (18h) — edital 10/2026 COPESE/UFJF. Pagamento da taxa até 17/08.",
+    registrationUrl: "https://www2.ufjf.br/copese/",
   },
   {
     id: "pases-ufv", name: "PASES", fullName: "Programa de Avaliação Seriada para Ingresso na UFV",
@@ -412,7 +415,11 @@ export const VESTIBULARES_TARGETS: VestibularTarget[] = [
       ["Linguagens", "Matemática", "Ciências da Natureza", "Ciências Humanas"],
     ],
     phaseContents: [PSAS_MOD1, PSAS_MOD2, PSAS_MOD3],
-    registrationNote: "Inscrições ainda não abertas — edital do ciclo 2026-2028 ainda não publicado.",
+    // CONFIRMADO — Edital nº 1183/2026 (UFMG): Etapa 1 do ciclo 2026-2028 teve inscrições
+    // de 15/06 a 22/07/2026 — JÁ ENCERRADAS. Prova em 12-13/12/2026. Confira se já se inscreveu.
+    registrationOpensAt: "2026-06-15",
+    registrationClosesAt: "2026-07-22",
+    registrationNote: "Inscrições da Etapa 1 (ciclo 2026-2028) já ENCERRADAS — foram de 15/06 a 22/07/2026, edital 1183/2026 (Copeve/UFMG). Confira se já se inscreveu!",
     registrationUrl: "https://www.ufmg.br/seriadoufmg/",
   },
   {
