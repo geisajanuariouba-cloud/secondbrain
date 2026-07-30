@@ -1,11 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
-import { Sparkles, Sun, Moon, Heart, BookOpen, CheckCircle2, Circle, Plus, X } from "lucide-react";
+import { Sparkles, Sun, Moon, Heart, BookOpen, CheckCircle2, Circle, Plus, X, CalendarClock } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
-import { SKINCARE_MORNING, SKINCARE_EVENING, MOOD_LOG, GRATITUDE_LOG, type SkinStep, type MoodEntry } from "@/lib/data";
+import { SKINCARE_MORNING, SKINCARE_EVENING, WEEKLY_CARE, MOOD_LOG, GRATITUDE_LOG, type SkinStep, type WeeklyCareItem, type MoodEntry } from "@/lib/data";
+import { loadSkincareSteps, toggleSkincareStep } from "@/lib/skincare-store";
+
+const WEEKLY_CARE_KEY = "self-care-weekly";
 
 const MOOD_LABELS: Record<number, { label: string; emoji: string; color: string }> = {
   1: { label: "Mal", emoji: "😞", color: "var(--danger)" },
@@ -25,15 +28,37 @@ export default function SelfCarePage() {
   const today = getTodayISO();
   const [morning, setMorning] = useState<SkinStep[]>(SKINCARE_MORNING);
   const [evening, setEvening] = useState<SkinStep[]>(SKINCARE_EVENING);
+  const [weekly, setWeekly] = useState<WeeklyCareItem[]>(WEEKLY_CARE);
   const [moodLog, setMoodLog] = useState<MoodEntry[]>(MOOD_LOG);
   const [gratitude, setGratitude] = useState(GRATITUDE_LOG);
   const [newGratitude, setNewGratitude] = useState("");
   const [addingGratitude, setAddingGratitude] = useState(false);
 
-  const toggleMorning = (id: string) =>
+  useEffect(() => {
+    const steps = loadSkincareSteps(today);
+    setMorning(steps.morning);
+    setEvening(steps.evening);
+    try {
+      const saved = localStorage.getItem(WEEKLY_CARE_KEY);
+      if (saved) setWeekly(JSON.parse(saved));
+    } catch { /* ignore */ }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const toggleMorning = (id: string) => {
+    toggleSkincareStep(today, "morning", id);
     setMorning((prev) => prev.map((s) => s.id === id ? { ...s, done: !s.done } : s));
-  const toggleEvening = (id: string) =>
+  };
+  const toggleEvening = (id: string) => {
+    toggleSkincareStep(today, "evening", id);
     setEvening((prev) => prev.map((s) => s.id === id ? { ...s, done: !s.done } : s));
+  };
+  const toggleWeekly = (id: string) =>
+    setWeekly((prev) => {
+      const next = prev.map((w) => w.id === id ? { ...w, done: !w.done } : w);
+      localStorage.setItem(WEEKLY_CARE_KEY, JSON.stringify(next));
+      return next;
+    });
 
   const setTodayMood = (mood: 1 | 2 | 3 | 4 | 5) => {
     setMoodLog((prev) => {
@@ -63,6 +88,7 @@ export default function SelfCarePage() {
   const todayMood = moodLog[moodLog.length - 1]?.mood ?? 3;
   const morningDone = morning.filter((s) => s.done).length;
   const eveningDone = evening.filter((s) => s.done).length;
+  const weeklyDone = weekly.filter((w) => w.done).length;
   const todayGratitude = gratitude.find((e) => e.date === today);
 
   return (
@@ -140,6 +166,41 @@ export default function SelfCarePage() {
           </div>
         </Card>
       </div>
+
+      {/* Cuidados semanais */}
+      <Card>
+        <SectionTitle
+          action={<span className="text-xs text-text-muted">{weeklyDone}/{weekly.length}</span>}
+        >
+          <span className="flex items-center gap-2">
+            <CalendarClock size={16} style={{ color: "var(--c-rose)" }} /> Cuidados semanais
+          </span>
+        </SectionTitle>
+        <div className="mt-3 grid gap-2 sm:grid-cols-2">
+          {weekly.map((w, i) => (
+            <motion.button
+              key={w.id}
+              initial={{ opacity: 0, x: -8 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: i * 0.06 }}
+              onClick={() => toggleWeekly(w.id)}
+              className={`flex w-full items-center gap-3 rounded-xl border px-3 py-2.5 text-left transition-all hover:border-c-rose/40 ${
+                w.done ? "border-c-rose/30 bg-surface-2/30 opacity-70" : "border-border bg-surface-2/40"
+              }`}
+            >
+              {w.done
+                ? <CheckCircle2 size={18} style={{ color: "var(--c-rose)" }} />
+                : <Circle size={18} className="text-text-muted" />}
+              <span className="flex-1 min-w-0">
+                <span className={`block text-sm ${w.done ? "line-through text-text-muted" : "font-medium"}`}>
+                  {w.name}
+                </span>
+                <span className="text-[11px] text-text-muted">{w.frequency}</span>
+              </span>
+            </motion.button>
+          ))}
+        </div>
+      </Card>
 
       {/* Humor do dia */}
       <Card>

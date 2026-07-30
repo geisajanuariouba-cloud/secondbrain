@@ -259,6 +259,14 @@ export const SKINCARE_EVENING: SkinStep[] = [
   { id: "sk-e3", name: "Sérum", done: false },
   { id: "sk-e4", name: "Hidratante noturno", done: false },
 ];
+export type WeeklyCareItem = { id: string; name: string; frequency: string; done: boolean };
+export const WEEKLY_CARE: WeeklyCareItem[] = [
+  { id: "wc-1", name: "Clarear dentes", frequency: "2x/semana", done: false },
+  { id: "wc-2", name: "Loirar pelo", frequency: "1x/semana", done: false },
+  { id: "wc-3", name: "Maquiar", frequency: "1x/semana", done: false },
+  { id: "wc-4", name: "Tomar banho (spa)", frequency: "1x/semana", done: false },
+  { id: "wc-5", name: "Refazer cabelo", frequency: "1x/semana", done: false },
+];
 export type MoodEntry = { date: string; mood: 1 | 2 | 3 | 4 | 5; note?: string };
 export const MOOD_LOG: MoodEntry[] = [];
 export const GRATITUDE_LOG: { date: string; items: string[] }[] = [];

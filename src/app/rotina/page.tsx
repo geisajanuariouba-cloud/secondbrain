@@ -12,6 +12,7 @@ import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress";
 import { WATER_GLASSES, STUDY_STREAK, REVISIONS } from "@/lib/data";
 import { pendingOpenRegistrations, type VestibularRegistration } from "@/lib/vestibulares-registrations";
+import { isSkincareComplete, setSkincarePeriodComplete } from "@/lib/skincare-store";
 import { CalendarClock } from "lucide-react";
 import {
   DEFAULT_HABITS_BY_DAY, ALL_DAYS, DAY_ABBR, getTodayKey,
@@ -63,7 +64,7 @@ function getTodayDate() {
 // Sempre que a rotina padrão (DEFAULT_HABITS_BY_DAY) for reestruturada, incrementar esta versão.
 // Isso descarta customizações antigas salvas no navegador para que a nova rotina padrão apareça
 // de fato, em vez de ficar presa atrás de uma versão anterior salva em localStorage.
-const HABITS_SCHEMA_VERSION = "2026-07-22.2";
+const HABITS_SCHEMA_VERSION = "2026-07-30.3";
 
 function loadDefaultHabits(day: DayKey): Habit[] {
   try {
@@ -170,7 +171,13 @@ export default function RotinaPage() {
   // Load rotina state when day changes
   useEffect(() => {
     const savedChecked = localStorage.getItem(`rotina-checked-${selectedDay}`);
-    setChecked(savedChecked ? JSON.parse(savedChecked) : {});
+    const parsedChecked = savedChecked ? JSON.parse(savedChecked) : {};
+    // Skincare manhã/noite espelham o passo a passo da tela Self Care (só faz sentido para o dia real de hoje)
+    if (selectedDay === todayKey) {
+      parsedChecked["skincare-manha"] = isSkincareComplete(todayDate, "morning");
+      parsedChecked["skincare-noite"] = isSkincareComplete(todayDate, "evening");
+    }
+    setChecked(parsedChecked);
     const savedExtras = localStorage.getItem(`rotina-extras-${selectedDay}`);
     setExtras(savedExtras ? JSON.parse(savedExtras) : []);
     const savedRemoved = localStorage.getItem(`rotina-removed-${selectedDay}`);
@@ -201,7 +208,13 @@ export default function RotinaPage() {
   const habits = loadDefaultHabits(selectedDay).filter((h) => !removed.includes(h.id));
 
   const toggle = (id: string) =>
-    setChecked((prev) => ({ ...prev, [id]: !prev[id] }));
+    setChecked((prev) => {
+      const next = !prev[id];
+      if (selectedDay === todayKey && (id === "skincare-manha" || id === "skincare-noite")) {
+        setSkincarePeriodComplete(todayDate, id === "skincare-manha" ? "morning" : "evening", next);
+      }
+      return { ...prev, [id]: next };
+    });
 
   const toggleExtra = (id: string) =>
     setExtras((prev) => prev.map((e) => e.id === id ? { ...e, done: !e.done } : e));
