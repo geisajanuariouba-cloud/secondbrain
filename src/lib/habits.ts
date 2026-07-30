@@ -161,6 +161,7 @@ export const DEFAULT_HABITS_BY_DAY: Record<DayKey, Habit[]> = {
     { id: "dom-care-3", name: "Maquiar", timeOfDay: "Tarde", category: "Self care", time: "18:00" },
     { id: "dom-care-4", name: "Tomar banho (spa)", timeOfDay: "Tarde", category: "Self care", time: "18:05" },
     { id: "dom-care-5", name: "Refazer cabelo", timeOfDay: "Tarde", category: "Self care", time: "18:10" },
+    { id: "dom-missa", name: "Missa", timeOfDay: "Noite", category: "Aproximar de Deus", time: "19:00" },
     { id: "dom-9", name: "Redação", timeOfDay: "Noite", category: "Estudos", time: "19:30" },
     { id: "dom-10", name: "Organizar a semana (tópicos de estudo e trabalho)", timeOfDay: "Noite", category: "Rotina", time: "21:30" },
     { id: "skincare-noite", name: "Skincare noite", timeOfDay: "Noite", category: "Self care", time: "21:45" },

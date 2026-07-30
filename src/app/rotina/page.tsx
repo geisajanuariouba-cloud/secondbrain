@@ -64,7 +64,7 @@ function getTodayDate() {
 // Sempre que a rotina padrão (DEFAULT_HABITS_BY_DAY) for reestruturada, incrementar esta versão.
 // Isso descarta customizações antigas salvas no navegador para que a nova rotina padrão apareça
 // de fato, em vez de ficar presa atrás de uma versão anterior salva em localStorage.
-const HABITS_SCHEMA_VERSION = "2026-07-30.3";
+const HABITS_SCHEMA_VERSION = "2026-07-30.4";
 
 function loadDefaultHabits(day: DayKey): Habit[] {
   try {
