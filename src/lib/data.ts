@@ -625,27 +625,39 @@ export type RecurringExpense = {
 // ajuste conforme a data real de cada conta. Não inclui itens marcados "x" no caderno (Higgsfield,
 // ChatGPT, Academia) por não estarem sendo cobrados no momento.
 export const RECURRING_EXPENSES: RecurringExpense[] = [
-  // Casa — total 1.080
-  { id: "re-agua", name: "Água", value: 150, frequency: "Mensal", category: "Casa", nextDue: "2026-08-05", paid: false, color: "var(--c-blue)", emoji: "💧" },
-  { id: "re-luz", name: "Luz", value: 300, frequency: "Mensal", category: "Casa", nextDue: "2026-08-05", paid: false, color: "var(--c-amber)", emoji: "💡" },
-  { id: "re-internet", name: "Internet", value: 220, frequency: "Mensal", category: "Casa", nextDue: "2026-08-05", paid: false, color: "var(--c-cyan)", emoji: "📶" },
-  { id: "re-alimentacao-casa", name: "Alimentação (casa)", value: 100, frequency: "Mensal", category: "Casa", nextDue: "2026-08-05", paid: false, color: "var(--c-green)", emoji: "🍽️" },
-  { id: "re-van", name: "Van", value: 310, frequency: "Mensal", category: "Casa", nextDue: "2026-08-05", paid: false, color: "var(--text-muted)", emoji: "🚐" },
+  // Contas de casa — 670
+  { id: "re-agua", name: "Água", value: 150, frequency: "Mensal", category: "Contas de casa", nextDue: "2026-08-05", paid: false, color: "var(--c-blue)", emoji: "💧" },
+  { id: "re-luz", name: "Luz", value: 300, frequency: "Mensal", category: "Contas de casa", nextDue: "2026-08-05", paid: false, color: "var(--c-amber)", emoji: "💡" },
+  { id: "re-internet", name: "Internet", value: 220, frequency: "Mensal", category: "Contas de casa", nextDue: "2026-08-05", paid: false, color: "var(--c-cyan)", emoji: "📶" },
 
-  // Pessoal — assinaturas e gastos fixos
+  // Alimentação
+  { id: "re-alimentacao-casa", name: "Alimentação (casa)", value: 100, frequency: "Mensal", category: "Alimentação", nextDue: "2026-08-05", paid: false, color: "var(--c-green)", emoji: "🍽️" },
+
+  // Transporte
+  { id: "re-van", name: "Van", value: 310, frequency: "Mensal", category: "Transporte", nextDue: "2026-08-05", paid: false, color: "var(--text-muted)", emoji: "🚐" },
+
+  // Assinaturas
   { id: "re-discord", name: "Discord", value: 26, frequency: "Mensal", category: "Assinaturas", nextDue: "2026-08-05", paid: false, color: "var(--secondary)", emoji: "🎮" },
   { id: "re-netflix", name: "Netflix", value: 50, frequency: "Mensal", category: "Assinaturas", nextDue: "2026-08-05", paid: false, color: "var(--danger)", emoji: "📺" },
   { id: "re-claude", name: "Claude", value: 110, frequency: "Mensal", category: "Assinaturas", nextDue: "2026-08-05", paid: false, color: "var(--accent)", emoji: "🤖" },
   { id: "re-google-one", name: "Google One", value: 50, frequency: "Mensal", category: "Assinaturas", nextDue: "2026-08-05", paid: false, color: "var(--c-blue)", emoji: "☁️" },
   { id: "re-spotify", name: "Spotify", value: 25, frequency: "Mensal", category: "Assinaturas", nextDue: "2026-08-05", paid: false, color: "var(--c-green)", emoji: "🎵" },
-  { id: "re-cartao", name: "Cartão de crédito", value: 2000, frequency: "Mensal", category: "Pessoal", nextDue: "2026-08-05", paid: false, color: "var(--c-rose)", emoji: "💳" },
-  { id: "re-livros", name: "Livros", value: 330, frequency: "Mensal", category: "Pessoal", nextDue: "2026-08-05", paid: false, color: "var(--secondary)", emoji: "📚" },
+
+  // Cartão de crédito
+  { id: "re-cartao", name: "Cartão de crédito", value: 2000, frequency: "Mensal", category: "Cartão de crédito", nextDue: "2026-08-05", paid: false, color: "var(--c-rose)", emoji: "💳" },
+
+  // Lazer & Compras
+  { id: "re-livros", name: "Livros", value: 330, frequency: "Mensal", category: "Lazer & Compras", nextDue: "2026-08-05", paid: false, color: "var(--secondary)", emoji: "📚" },
+
+  // Estudos
   { id: "re-assaad", name: "Plataforma Assaad", value: 300, frequency: "Mensal", category: "Estudos", nextDue: "2026-08-05", paid: false, color: "var(--secondary)", emoji: "📖" },
   { id: "re-escola", name: "Escola", value: 1900, frequency: "Mensal", category: "Estudos", nextDue: "2026-08-05", paid: false, color: "var(--secondary)", emoji: "🏫" },
+
+  // Trabalho
   { id: "re-utmify", name: "Utmify", value: 250, frequency: "Mensal", category: "Trabalho", nextDue: "2026-08-05", paid: false, color: "var(--c-amber)", emoji: "📊" },
 
-  // Salão
-  { id: "re-raykou", name: "Raykou", value: 600, frequency: "Mensal", category: "Salão", nextDue: "2026-08-05", paid: false, color: "var(--c-lilac)", emoji: "💇‍♀️" },
+  // Salão / Trabalho
+  { id: "re-raykou", name: "Raykou", value: 600, frequency: "Mensal", category: "Salão / Trabalho", nextDue: "2026-08-05", paid: false, color: "var(--c-lilac)", emoji: "💇‍♀️" },
 ];
 
 // ---- Orçamento (% por categoria) ----
@@ -658,11 +670,17 @@ export type BudgetCategory = {
   color: string;
 };
 
-// Baseado nos gastos fixos mensais do caderno: Casa 1.080 · Pessoal 5.041 (inclui escola/utmify) · Salão 600
+// Baseado nos gastos fixos mensais do caderno, com categorias normais de gasto (total R$6.721)
 export const BUDGET_CATEGORIES: BudgetCategory[] = [
-  { id: "bc-casa", name: "Casa", emoji: "🏠", percentage: 16, spent: 1080, color: "var(--c-blue)" },
-  { id: "bc-pessoal", name: "Pessoal", emoji: "🙋‍♀️", percentage: 75, spent: 5041, color: "var(--c-rose)" },
-  { id: "bc-salao", name: "Salão", emoji: "💇‍♀️", percentage: 9, spent: 600, color: "var(--c-lilac)" },
+  { id: "bc-cartao", name: "Cartão de crédito", emoji: "💳", percentage: 30, spent: 2000, color: "var(--c-rose)" },
+  { id: "bc-estudos", name: "Estudos", emoji: "🏫", percentage: 33, spent: 2200, color: "var(--secondary)" },
+  { id: "bc-casa", name: "Contas de casa", emoji: "🏠", percentage: 10, spent: 670, color: "var(--c-blue)" },
+  { id: "bc-salao", name: "Salão / Trabalho", emoji: "💇‍♀️", percentage: 9, spent: 600, color: "var(--c-lilac)" },
+  { id: "bc-transporte", name: "Transporte", emoji: "🚐", percentage: 5, spent: 310, color: "var(--text-muted)" },
+  { id: "bc-lazer", name: "Lazer & Compras", emoji: "🛍️", percentage: 5, spent: 330, color: "var(--c-amber)" },
+  { id: "bc-assinaturas", name: "Assinaturas", emoji: "📱", percentage: 4, spent: 261, color: "var(--accent)" },
+  { id: "bc-trabalho", name: "Trabalho", emoji: "📊", percentage: 4, spent: 250, color: "var(--c-amber)" },
+  { id: "bc-alimentacao", name: "Alimentação", emoji: "🍽️", percentage: 1, spent: 100, color: "var(--c-green)" },
 ];
 
 // ---- Trabalho ----
