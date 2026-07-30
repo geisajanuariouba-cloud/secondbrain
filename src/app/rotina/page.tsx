@@ -61,6 +61,32 @@ function getTodayDate() {
   return new Date().toISOString().split("T")[0];
 }
 
+const WEEKDAY_BY_INDEX: Record<number, DayKey> = {
+  0: "Domingo", 1: "Segunda", 2: "Terça", 3: "Quarta", 4: "Quinta", 5: "Sexta", 6: "Sábado",
+};
+
+function weekdayKeyFromISO(iso: string): DayKey {
+  return WEEKDAY_BY_INDEX[new Date(iso + "T12:00:00").getDay()];
+}
+
+function shiftDateISO(iso: string, days: number): string {
+  const d = new Date(iso + "T12:00:00");
+  d.setDate(d.getDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Segunda-feira da semana que contém a data dada. */
+function mondayOfWeek(iso: string): string {
+  const d = new Date(iso + "T12:00:00");
+  const day = d.getDay(); // 0=Dom..6=Sáb
+  const diffToMonday = day === 0 ? -6 : 1 - day;
+  return shiftDateISO(iso, diffToMonday);
+}
+
+function formatDateShort(iso: string) {
+  return new Date(iso + "T12:00:00").toLocaleDateString("pt-BR", { day: "2-digit", month: "2-digit" });
+}
+
 // Sempre que a rotina padrão (DEFAULT_HABITS_BY_DAY) for reestruturada, incrementar esta versão.
 // Isso descarta customizações antigas salvas no navegador para que a nova rotina padrão apareça
 // de fato, em vez de ficar presa atrás de uma versão anterior salva em localStorage.
@@ -142,7 +168,9 @@ export default function RotinaPage() {
   const todayDate = getTodayDate();
 
   const [tab, setTab] = useState<Tab>("rotina");
-  const [selectedDay, setSelectedDay] = useState<DayKey>(todayKey);
+  const [selectedDate, setSelectedDate] = useState<string>(todayDate);
+  const selectedDay = weekdayKeyFromISO(selectedDate);
+  const [jumpDate, setJumpDate] = useState(todayDate);
   const [openRegistrations, setOpenRegistrations] = useState<VestibularRegistration[]>([]);
   useEffect(() => { setOpenRegistrations(pendingOpenRegistrations()); }, []);
 
@@ -168,34 +196,43 @@ export default function RotinaPage() {
   const [showAddStudy, setShowAddStudy] = useState(false);
   const [newStudy, setNewStudy] = useState({ subject: SUBJECTS_LIST[0], topic: "", step: "Aula" as StudyStep });
 
-  // Load rotina state when day changes
+  // Load rotina state when the selected date changes. Cada data real (não cada dia da
+  // semana genérico) tem seu próprio progresso agora, então navegar pra semana passada ou
+  // futura mostra o estado daquele dia específico.
   useEffect(() => {
-    const savedChecked = localStorage.getItem(`rotina-checked-${selectedDay}`);
+    // Migração leve: se a data de hoje ainda não tem nada salvo na chave nova (por data), mas
+    // existe progresso salvo na chave antiga (por dia da semana), aproveita pra não perder o
+    // que já tinha sido marcado antes dessa mudança.
+    const oldChecked = selectedDate === todayDate ? localStorage.getItem(`rotina-checked-${selectedDay}`) : null;
+    const savedChecked = localStorage.getItem(`rotina-checked-${selectedDate}`) ?? oldChecked;
     const parsedChecked = savedChecked ? JSON.parse(savedChecked) : {};
     // Skincare manhã/noite espelham o passo a passo da tela Self Care (só faz sentido para o dia real de hoje)
-    if (selectedDay === todayKey) {
+    if (selectedDate === todayDate) {
       parsedChecked["skincare-manha"] = isSkincareComplete(todayDate, "morning");
       parsedChecked["skincare-noite"] = isSkincareComplete(todayDate, "evening");
     }
     setChecked(parsedChecked);
-    const savedExtras = localStorage.getItem(`rotina-extras-${selectedDay}`);
+    const oldExtras = selectedDate === todayDate ? localStorage.getItem(`rotina-extras-${selectedDay}`) : null;
+    const savedExtras = localStorage.getItem(`rotina-extras-${selectedDate}`) ?? oldExtras;
     setExtras(savedExtras ? JSON.parse(savedExtras) : []);
-    const savedRemoved = localStorage.getItem(`rotina-removed-${selectedDay}`);
+    const oldRemoved = selectedDate === todayDate ? localStorage.getItem(`rotina-removed-${selectedDay}`) : null;
+    const savedRemoved = localStorage.getItem(`rotina-removed-${selectedDate}`) ?? oldRemoved;
     setRemoved(savedRemoved ? JSON.parse(savedRemoved) : []);
     setStudyTasks(loadStudyTasks(todayDate));
-  }, [selectedDay, todayDate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedDate, todayDate]);
 
   useEffect(() => {
-    localStorage.setItem(`rotina-checked-${selectedDay}`, JSON.stringify(checked));
-  }, [checked, selectedDay]);
+    localStorage.setItem(`rotina-checked-${selectedDate}`, JSON.stringify(checked));
+  }, [checked, selectedDate]);
 
   useEffect(() => {
-    localStorage.setItem(`rotina-extras-${selectedDay}`, JSON.stringify(extras));
-  }, [extras, selectedDay]);
+    localStorage.setItem(`rotina-extras-${selectedDate}`, JSON.stringify(extras));
+  }, [extras, selectedDate]);
 
   useEffect(() => {
-    localStorage.setItem(`rotina-removed-${selectedDay}`, JSON.stringify(removed));
-  }, [removed, selectedDay]);
+    localStorage.setItem(`rotina-removed-${selectedDate}`, JSON.stringify(removed));
+  }, [removed, selectedDate]);
 
   // Load config habits when configDay changes
   useEffect(() => {
@@ -210,7 +247,7 @@ export default function RotinaPage() {
   const toggle = (id: string) =>
     setChecked((prev) => {
       const next = !prev[id];
-      if (selectedDay === todayKey && (id === "skincare-manha" || id === "skincare-noite")) {
+      if (selectedDate === todayDate && (id === "skincare-manha" || id === "skincare-noite")) {
         setSkincarePeriodComplete(todayDate, id === "skincare-manha" ? "morning" : "evening", next);
       }
       return { ...prev, [id]: next };
@@ -241,7 +278,7 @@ export default function RotinaPage() {
   const extrasDone = extras.filter((e) => e.done).length;
   const totalDone = allDone + extrasDone;
   const totalTasks = habits.length + extras.length;
-  const isToday = selectedDay === todayKey;
+  const isToday = selectedDate === todayDate;
 
   // ─── Study actions ────────────────────────────────────────────────────────
 
@@ -393,36 +430,78 @@ export default function RotinaPage() {
             </Card>
           )}
 
-          {/* Seletor de dia */}
+          {/* Seletor de semana/dia */}
           <Card>
-            <div className="flex flex-wrap items-center gap-2">
-              {ALL_DAYS.map((day) => {
-                const active = day === selectedDay;
-                const isCurrentDay = day === todayKey;
-                return (
-                  <button
-                    key={day}
-                    onClick={() => setSelectedDay(day)}
-                    className="relative flex flex-col items-center gap-1 rounded-xl px-4 py-2.5 text-sm font-semibold transition-all"
-                    style={{
-                      background: active ? "color-mix(in srgb, var(--c-pink) 18%, transparent)" : "transparent",
-                      color: active ? "var(--c-pink)" : "var(--text-secondary)",
-                      border: active ? "1px solid color-mix(in srgb, var(--c-pink) 35%, transparent)" : "1px solid transparent",
-                    }}
-                  >
-                    <span>{DAY_ABBR[day]}</span>
-                    {isCurrentDay && (
-                      <span
-                        className="h-1.5 w-1.5 rounded-full"
-                        style={{ background: active ? "var(--c-pink)" : "var(--text-muted)" }}
-                      />
-                    )}
-                  </button>
-                );
-              })}
-              <span className="ml-auto text-xs text-text-muted">
-                {isToday ? "📍 Hoje" : `Planejando ${selectedDay}`}
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setSelectedDate((d) => shiftDateISO(d, -7))}
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-border text-text-muted transition-colors hover:border-c-pink/40 hover:text-c-pink"
+                title="Semana anterior"
+              >
+                <ChevronLeft size={15} />
+              </button>
+              <div className="flex flex-1 flex-wrap items-center justify-center gap-2">
+                {ALL_DAYS.map((day, i) => {
+                  const dateForDay = shiftDateISO(mondayOfWeek(selectedDate), i);
+                  const active = dateForDay === selectedDate;
+                  const isCurrentDay = dateForDay === todayDate;
+                  return (
+                    <button
+                      key={day}
+                      onClick={() => setSelectedDate(dateForDay)}
+                      className="relative flex flex-col items-center gap-1 rounded-xl px-3 py-2.5 text-sm font-semibold transition-all"
+                      style={{
+                        background: active ? "color-mix(in srgb, var(--c-pink) 18%, transparent)" : "transparent",
+                        color: active ? "var(--c-pink)" : "var(--text-secondary)",
+                        border: active ? "1px solid color-mix(in srgb, var(--c-pink) 35%, transparent)" : "1px solid transparent",
+                      }}
+                    >
+                      <span>{DAY_ABBR[day]}</span>
+                      <span className="text-[10px] font-normal text-text-muted">{formatDateShort(dateForDay)}</span>
+                      {isCurrentDay && (
+                        <span
+                          className="h-1.5 w-1.5 rounded-full"
+                          style={{ background: active ? "var(--c-pink)" : "var(--text-muted)" }}
+                        />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <button
+                onClick={() => setSelectedDate((d) => shiftDateISO(d, 7))}
+                className="grid h-8 w-8 shrink-0 place-items-center rounded-lg border border-border text-text-muted transition-colors hover:border-c-pink/40 hover:text-c-pink"
+                title="Próxima semana"
+              >
+                <ChevronRight size={15} />
+              </button>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
+              <span className="text-xs text-text-muted">
+                {isToday ? "📍 Hoje" : `Planejando ${selectedDay}, ${formatDateShort(selectedDate)}`}
               </span>
+              <div className="ml-auto flex items-center gap-2">
+                {selectedDate !== todayDate && (
+                  <button
+                    onClick={() => { setSelectedDate(todayDate); setJumpDate(todayDate); }}
+                    className="rounded-lg border border-border px-2.5 py-1 text-xs font-semibold text-text-muted transition-colors hover:border-c-pink/40 hover:text-c-pink"
+                  >
+                    Voltar para hoje
+                  </button>
+                )}
+                <label className="flex items-center gap-1.5 text-xs text-text-muted">
+                  Ir para data:
+                  <input
+                    type="date"
+                    value={jumpDate}
+                    onChange={(e) => {
+                      setJumpDate(e.target.value);
+                      if (e.target.value) setSelectedDate(e.target.value);
+                    }}
+                    className="rounded-lg border border-border bg-surface-2 px-2 py-1 text-xs outline-none focus:border-c-pink/50"
+                  />
+                </label>
+              </div>
             </div>
           </Card>
 
