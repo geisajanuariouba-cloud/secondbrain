@@ -2,20 +2,14 @@
 
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { Briefcase, Clock, DollarSign, CheckCircle2, Circle, AlertCircle, Plus, X } from "lucide-react";
+import { Briefcase, Clock, DollarSign, CheckCircle2, Circle, AlertCircle, Plus, X, Settings } from "lucide-react";
+import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { WORK_SESSIONS, WORK_TASKS, type WorkTask, type WorkSession } from "@/lib/data";
+import { loadWorkProjects, type WorkProject } from "@/lib/work-projects";
 
-const PROJECTS = ["Salão", "Sypoza", "Optimio", "Pessoal"] as const;
-type Project = typeof PROJECTS[number];
-
-const PROJECT_META: Record<string, { color: string; emoji: string; desc: string }> = {
-  Salão: { color: "var(--c-lilac)", emoji: "💇‍♀️", desc: "Salão de beleza — atendimentos" },
-  Sypoza: { color: "var(--c-blue)", emoji: "🚀", desc: "Startup — estratégia & pitch" },
-  Optimio: { color: "var(--primary)", emoji: "⚙️", desc: "Produto digital — desenvolvimento" },
-  Pessoal: { color: "var(--c-amber)", emoji: "🙋‍♀️", desc: "Tarefas pessoais" },
-};
+const PESSOAL_META = { id: "Pessoal", name: "Pessoal", color: "var(--c-amber)", emoji: "🙋‍♀️", description: "Tarefas pessoais" };
 
 const PRIORITY_COLOR: Record<WorkTask["priority"], string> = {
   Alta: "var(--danger)",
@@ -39,10 +33,10 @@ const inputClass = "w-full rounded-xl border border-border bg-surface-2 px-3 py-
 const labelClass = "block text-xs font-semibold text-text-muted mb-1";
 
 // ── Formulário Nova Tarefa ──
-interface TaskFormProps { onAdd: (t: WorkTask) => void; onClose: () => void }
-function TaskForm({ onAdd, onClose }: TaskFormProps) {
+interface TaskFormProps { projects: WorkProject[]; onAdd: (t: WorkTask) => void; onClose: () => void }
+function TaskForm({ projects, onAdd, onClose }: TaskFormProps) {
   const [name, setName] = useState("");
-  const [project, setProject] = useState<Project>("Sypoza");
+  const [project, setProject] = useState(projects[0]?.id ?? "Pessoal");
   const [status, setStatus] = useState<WorkTask["status"]>("Não iniciada");
   const [due, setDue] = useState("");
 
@@ -78,8 +72,9 @@ function TaskForm({ onAdd, onClose }: TaskFormProps) {
         <div className="grid grid-cols-2 gap-3">
           <div>
             <label className={labelClass}>Projeto</label>
-            <select className={inputClass} value={project} onChange={e => setProject(e.target.value as Project)}>
-              {PROJECTS.map(p => <option key={p}>{p}</option>)}
+            <select className={inputClass} value={project} onChange={e => setProject(e.target.value)}>
+              {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
+              <option value="Pessoal">Pessoal</option>
             </select>
           </div>
           <div>
@@ -108,16 +103,16 @@ function TaskForm({ onAdd, onClose }: TaskFormProps) {
 }
 
 // ── Formulário Nova Sessão ──
-interface SessionFormProps { onAdd: (s: WorkSession) => void; onClose: () => void }
-function SessionForm({ onAdd, onClose }: SessionFormProps) {
-  const [project, setProject] = useState<"Salão" | "Sypoza" | "Optimio">("Salão");
+interface SessionFormProps { projects: WorkProject[]; onAdd: (s: WorkSession) => void; onClose: () => void }
+function SessionForm({ projects, onAdd, onClose }: SessionFormProps) {
+  const [project, setProject] = useState(projects[0]?.id ?? "");
   const [hours, setHours] = useState("");
   const [description, setDescription] = useState("");
   const [date, setDate] = useState(todayISO());
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hours || !description.trim()) return;
+    if (!hours || !description.trim() || !project) return;
     onAdd({
       id: `ws-${Date.now()}`,
       project,
@@ -141,10 +136,9 @@ function SessionForm({ onAdd, onClose }: SessionFormProps) {
       <form onSubmit={handleSubmit} className="space-y-3">
         <div>
           <label className={labelClass}>Projeto</label>
-          <select className={inputClass} value={project} onChange={e => setProject(e.target.value as "Salão" | "Sypoza" | "Optimio")}>
-            <option>Salão</option>
-            <option>Sypoza</option>
-            <option>Optimio</option>
+          <select className={inputClass} value={project} onChange={e => setProject(e.target.value)}>
+            {projects.length === 0 && <option value="">Nenhum projeto configurado</option>}
+            {projects.map(p => <option key={p.id} value={p.id}>{p.name}</option>)}
           </select>
         </div>
         <div className="grid grid-cols-2 gap-3">
@@ -175,13 +169,16 @@ function SessionForm({ onAdd, onClose }: SessionFormProps) {
 }
 
 export default function TrabalhoPage() {
-  const [selectedProject, setSelectedProject] = useState<"Salão" | "Sypoza" | "Optimio" | "Todos">("Todos");
+  const [projects, setProjects] = useState<WorkProject[]>([]);
+  const [selectedProject, setSelectedProject] = useState<string>("Todos");
   const [tasks, setTasks] = useState(WORK_TASKS);
   const [sessions, setSessions] = useState(WORK_SESSIONS);
   const [showTaskForm, setShowTaskForm] = useState(false);
   const [showSessionForm, setShowSessionForm] = useState(false);
 
   useEffect(() => {
+    setProjects(loadWorkProjects());
+
     const savedTasks = localStorage.getItem("trabalho-tarefas");
     if (savedTasks) {
       const localTasks: WorkTask[] = JSON.parse(savedTasks);
@@ -195,6 +192,9 @@ export default function TrabalhoPage() {
       setSessions([...WORK_SESSIONS.filter(s => !localIds.has(s.id)), ...localSessions]);
     }
   }, []);
+
+  const projectMeta = (id: string): WorkProject | typeof PESSOAL_META =>
+    projects.find((p) => p.id === id) ?? PESSOAL_META;
 
   const saveTasks = (next: WorkTask[]) => {
     const mockIds = new Set(WORK_TASKS.map(t => t.id));
@@ -253,10 +253,30 @@ export default function TrabalhoPage() {
     <div className="mx-auto max-w-5xl space-y-7">
       <PageHeader
         title="Trabalho"
-        subtitle="Salão · Sypoza · Optimio"
+        subtitle={projects.length > 0 ? projects.map((p) => p.name).join(" · ") : "Configure seus projetos"}
         icon={<Briefcase size={24} />}
         accent="var(--c-blue)"
+        action={
+          <Link
+            href="/configuracoes"
+            className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-1.5 text-xs font-semibold text-text-muted transition-colors hover:border-primary/50 hover:text-primary"
+          >
+            <Settings size={13} /> Projetos
+          </Link>
+        }
       />
+
+      {projects.length === 0 && (
+        <Card>
+          <p className="text-sm text-text-muted">
+            Nenhum projeto de trabalho configurado ainda.{" "}
+            <Link href="/configuracoes" className="font-semibold" style={{ color: "var(--primary)" }}>
+              Adicione seus projetos em Configurações
+            </Link>{" "}
+            para começar a registrar tarefas e sessões.
+          </p>
+        </Card>
+      )}
 
       {/* KPIs */}
       <div className="grid gap-4 sm:grid-cols-3">
@@ -266,7 +286,7 @@ export default function TrabalhoPage() {
               <DollarSign size={18} />
             </div>
             <div>
-              <p className="text-xs text-text-muted">Receita (Salão)</p>
+              <p className="text-xs text-text-muted">Receita total</p>
               <p className="text-xl font-extrabold" style={{ color: "var(--success)" }}>R$ {totalRevenue.toLocaleString("pt-BR")}</p>
             </div>
           </div>
@@ -296,30 +316,32 @@ export default function TrabalhoPage() {
       </div>
 
       {/* Projetos */}
-      <div className="flex flex-wrap gap-2">
-        {(["Todos", "Salão", "Sypoza", "Optimio"] as const).map((p) => (
-          <button
-            key={p}
-            onClick={() => setSelectedProject(p)}
-            className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold transition-all"
-            style={{
-              background: selectedProject === p ? (p === "Todos" ? "var(--primary)" : PROJECT_META[p].color) : "var(--surface-2)",
-              color: selectedProject === p ? (p === "Todos" ? "var(--primary-fg)" : "#fff") : "var(--text-secondary)",
-              borderColor: selectedProject === p ? "transparent" : undefined,
-            }}
-          >
-            {p !== "Todos" && <span>{PROJECT_META[p].emoji}</span>}
-            {p}
-          </button>
-        ))}
-      </div>
+      {projects.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {[{ id: "Todos", name: "Todos", emoji: "", color: "" }, ...projects].map((p) => (
+            <button
+              key={p.id}
+              onClick={() => setSelectedProject(p.id)}
+              className="flex items-center gap-2 rounded-full border border-border px-4 py-2 text-sm font-semibold transition-all"
+              style={{
+                background: selectedProject === p.id ? (p.id === "Todos" ? "var(--primary)" : p.color) : "var(--surface-2)",
+                color: selectedProject === p.id ? (p.id === "Todos" ? "var(--primary-fg)" : "#fff") : "var(--text-secondary)",
+                borderColor: selectedProject === p.id ? "transparent" : undefined,
+              }}
+            >
+              {p.id !== "Todos" && <span>{p.emoji}</span>}
+              {p.name}
+            </button>
+          ))}
+        </div>
+      )}
 
       {/* Forms */}
       <AnimatePresence>
-        {showTaskForm && <TaskForm onAdd={handleAddTask} onClose={() => setShowTaskForm(false)} />}
+        {showTaskForm && <TaskForm projects={projects} onAdd={handleAddTask} onClose={() => setShowTaskForm(false)} />}
       </AnimatePresence>
       <AnimatePresence>
-        {showSessionForm && <SessionForm onAdd={handleAddSession} onClose={() => setShowSessionForm(false)} />}
+        {showSessionForm && <SessionForm projects={projects} onAdd={handleAddSession} onClose={() => setShowSessionForm(false)} />}
       </AnimatePresence>
 
       {/* Botões de ação */}
@@ -333,7 +355,8 @@ export default function TrabalhoPage() {
         </button>
         <button
           onClick={() => { setShowSessionForm(v => !v); setShowTaskForm(false); }}
-          className="flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-bold transition-colors hover:bg-surface-hover"
+          disabled={projects.length === 0}
+          className="flex items-center gap-2 rounded-xl border border-border px-4 py-2.5 text-sm font-bold transition-colors hover:bg-surface-hover disabled:opacity-40"
           style={{ color: "var(--c-blue)" }}
         >
           <Plus size={16} /> Nova sessão
@@ -360,8 +383,8 @@ export default function TrabalhoPage() {
                     {task.name}
                   </p>
                   <div className="mt-0.5 flex items-center gap-2">
-                    <span className="text-[11px]">{PROJECT_META[task.project]?.emoji ?? "📌"}</span>
-                    <span className="text-[11px] text-text-muted">{task.project}</span>
+                    <span className="text-[11px]">{projectMeta(task.project).emoji ?? "📌"}</span>
+                    <span className="text-[11px] text-text-muted">{projectMeta(task.project).name ?? task.project}</span>
                     {task.due && (
                       <span className="text-[11px] text-text-muted">· até {new Date(task.due).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span>
                     )}
@@ -379,7 +402,7 @@ export default function TrabalhoPage() {
           <div className="mt-3 space-y-2">
             {filteredSessions.length === 0 && <p className="text-sm text-text-muted">Nenhuma sessão registrada.</p>}
             {filteredSessions.map((s) => {
-              const meta = PROJECT_META[s.project];
+              const meta = projectMeta(s.project);
               return (
                 <div key={s.id} className="flex items-center gap-3 rounded-xl border border-border px-3 py-2.5">
                   <div className="grid h-9 w-9 shrink-0 place-items-center rounded-xl text-base" style={{ background: `color-mix(in srgb, ${meta.color} 15%, transparent)` }}>
@@ -404,49 +427,50 @@ export default function TrabalhoPage() {
       </div>
 
       {/* Cards de projeto */}
-      <div className="grid gap-4 sm:grid-cols-3">
-        {(["Salão", "Sypoza", "Optimio"] as const).map((p) => {
-          const pSessions = sessions.filter((s) => s.project === p);
-          const hours = pSessions.reduce((sum, s) => sum + s.hours, 0);
-          const revenue = pSessions.filter((s) => s.revenue).reduce((sum, s) => sum + (s.revenue ?? 0), 0);
-          const pendingTasks = tasks.filter((t) => t.project === p && t.status !== "Concluída").length;
-          const meta = PROJECT_META[p];
-          return (
-            <Card key={p}>
-              <div className="flex items-center gap-3">
-                <div className="grid h-10 w-10 place-items-center rounded-xl text-xl" style={{ background: `color-mix(in srgb, ${meta.color} 15%, transparent)` }}>
-                  {meta.emoji}
-                </div>
-                <div>
-                  <p className="font-bold">{p}</p>
-                  <p className="text-xs text-text-muted">{meta.desc}</p>
-                </div>
-              </div>
-              <div className="mt-3 grid grid-cols-3 gap-2 text-center">
-                <div>
-                  <p className="text-lg font-extrabold" style={{ color: meta.color }}>{hours}h</p>
-                  <p className="text-[10px] text-text-muted">horas</p>
-                </div>
-                {revenue > 0 ? (
-                  <div>
-                    <p className="text-lg font-extrabold" style={{ color: "var(--success)" }}>R${revenue}</p>
-                    <p className="text-[10px] text-text-muted">receita</p>
+      {projects.length > 0 && (
+        <div className="grid gap-4 sm:grid-cols-3">
+          {projects.map((p) => {
+            const pSessions = sessions.filter((s) => s.project === p.id);
+            const hours = pSessions.reduce((sum, s) => sum + s.hours, 0);
+            const revenue = pSessions.filter((s) => s.revenue).reduce((sum, s) => sum + (s.revenue ?? 0), 0);
+            const pendingTasks = tasks.filter((t) => t.project === p.id && t.status !== "Concluída").length;
+            return (
+              <Card key={p.id}>
+                <div className="flex items-center gap-3">
+                  <div className="grid h-10 w-10 place-items-center rounded-xl text-xl" style={{ background: `color-mix(in srgb, ${p.color} 15%, transparent)` }}>
+                    {p.emoji}
                   </div>
-                ) : (
                   <div>
-                    <p className="text-lg font-extrabold text-text-muted">—</p>
-                    <p className="text-[10px] text-text-muted">receita</p>
+                    <p className="font-bold">{p.name}</p>
+                    <p className="text-xs text-text-muted">{p.description}</p>
                   </div>
-                )}
-                <div>
-                  <p className="text-lg font-extrabold" style={{ color: pendingTasks > 0 ? "var(--c-amber)" : "var(--success)" }}>{pendingTasks}</p>
-                  <p className="text-[10px] text-text-muted">pendentes</p>
                 </div>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+                <div className="mt-3 grid grid-cols-3 gap-2 text-center">
+                  <div>
+                    <p className="text-lg font-extrabold" style={{ color: p.color }}>{hours}h</p>
+                    <p className="text-[10px] text-text-muted">horas</p>
+                  </div>
+                  {revenue > 0 ? (
+                    <div>
+                      <p className="text-lg font-extrabold" style={{ color: "var(--success)" }}>R${revenue}</p>
+                      <p className="text-[10px] text-text-muted">receita</p>
+                    </div>
+                  ) : (
+                    <div>
+                      <p className="text-lg font-extrabold text-text-muted">—</p>
+                      <p className="text-[10px] text-text-muted">receita</p>
+                    </div>
+                  )}
+                  <div>
+                    <p className="text-lg font-extrabold" style={{ color: pendingTasks > 0 ? "var(--c-amber)" : "var(--success)" }}>{pendingTasks}</p>
+                    <p className="text-[10px] text-text-muted">pendentes</p>
+                  </div>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      )}
     </div>
   );
 }

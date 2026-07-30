@@ -8,12 +8,13 @@ import {
   Zap, Mail, MessageCircle, Plus, Trash2, ChevronRight,
   Wifi, WifiOff, RefreshCw, AlertCircle, CheckCircle2,
   Tag, ArrowRight, Phone, Edit3, Save, X, BookOpen, Loader2,
-  ExternalLink, Copy, Terminal,
+  ExternalLink, Copy, Terminal, Briefcase,
 } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
+import { loadWorkProjects, saveWorkProjects, DEFAULT_WORK_PROJECTS, type WorkProject } from "@/lib/work-projects";
 
 type Tab = "geral" | "notificacoes" | "automacoes" | "dados";
 
@@ -71,6 +72,15 @@ export default function ConfiguracoesPage() {
   const [kindleEmail, setKindleEmail] = useState("");
   const [editingKindle, setEditingKindle] = useState(false);
   const [copiedEnv, setCopiedEnv] = useState<string | null>(null);
+  const [workProjects, setWorkProjects] = useState<WorkProject[]>(DEFAULT_WORK_PROJECTS);
+  const [addingProject, setAddingProject] = useState(false);
+  const [newProjectName, setNewProjectName] = useState("");
+  const [newProjectEmoji, setNewProjectEmoji] = useState("📌");
+  const [newProjectDesc, setNewProjectDesc] = useState("");
+
+  useEffect(() => {
+    setWorkProjects(loadWorkProjects());
+  }, []);
 
   useEffect(() => {
     setMounted(true);
@@ -98,6 +108,27 @@ export default function ConfiguracoesPage() {
     } finally {
       setLoadingStatus(false);
     }
+  }
+
+  function addWorkProject() {
+    if (!newProjectName.trim()) return;
+    const colors = ["var(--c-blue)", "var(--c-rose)", "var(--c-cyan)", "var(--c-amber)", "var(--secondary)", "var(--accent)"];
+    const next = [...workProjects, {
+      id: newProjectName.trim(),
+      name: newProjectName.trim(),
+      emoji: newProjectEmoji || "📌",
+      color: colors[workProjects.length % colors.length],
+      description: newProjectDesc.trim(),
+    }];
+    setWorkProjects(next);
+    saveWorkProjects(next);
+    setNewProjectName(""); setNewProjectEmoji("📌"); setNewProjectDesc(""); setAddingProject(false);
+  }
+
+  function removeWorkProject(id: string) {
+    const next = workProjects.filter((p) => p.id !== id);
+    setWorkProjects(next);
+    saveWorkProjects(next);
   }
 
   async function connectGmail() {
@@ -781,6 +812,54 @@ export default function ConfiguracoesPage() {
                 ) : (
                   <button onClick={() => setAddingCat(true)} className="mt-1 flex w-full items-center gap-2 rounded-xl border border-dashed border-border px-3 py-2.5 text-sm text-text-muted transition-colors hover:border-primary/50 hover:text-primary">
                     <Plus size={15} /> Nova categoria
+                  </button>
+                )}
+              </div>
+            </Card>
+
+            <Card>
+              <SectionTitle>
+                <span className="flex items-center gap-2">
+                  <Briefcase size={16} style={{ color: "var(--c-blue)" }} />
+                  Projetos de trabalho
+                </span>
+              </SectionTitle>
+              <p className="mt-1 mb-3 text-xs text-text-muted">Usados na tela de Trabalho para organizar tarefas, sessões e receita por projeto.</p>
+              <div className="space-y-2">
+                {workProjects.length === 0 && (
+                  <p className="text-sm text-text-muted">Nenhum projeto configurado ainda.</p>
+                )}
+                {workProjects.map((proj) => (
+                  <div key={proj.id} className="flex items-center gap-3 rounded-xl border border-border bg-surface-2/30 px-3 py-2.5">
+                    <span className="h-7 w-7 shrink-0 grid place-items-center rounded-lg text-sm" style={{ background: `color-mix(in srgb, ${proj.color} 15%, transparent)` }}>
+                      {proj.emoji}
+                    </span>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium">{proj.name}</p>
+                      {proj.description && <p className="truncate text-xs text-text-muted">{proj.description}</p>}
+                    </div>
+                    <button onClick={() => removeWorkProject(proj.id)} className="text-text-muted opacity-40 hover:opacity-100 transition-opacity">
+                      <Trash2 size={14} />
+                    </button>
+                  </div>
+                ))}
+                {addingProject ? (
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    <input value={newProjectEmoji} onChange={(e) => setNewProjectEmoji(e.target.value)} className="w-14 rounded-xl border border-border bg-surface-2 px-2 py-2.5 text-center text-sm outline-none" placeholder="📌" maxLength={2} />
+                    <input autoFocus value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") addWorkProject(); }}
+                      placeholder="Nome do projeto..."
+                      className="min-w-0 flex-1 rounded-xl border border-border bg-surface-2 px-3 py-2.5 text-sm outline-none focus:border-primary/60" />
+                    <input value={newProjectDesc} onChange={(e) => setNewProjectDesc(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") addWorkProject(); }}
+                      placeholder="Descrição (opcional)"
+                      className="min-w-0 flex-1 rounded-xl border border-border bg-surface-2 px-3 py-2.5 text-sm outline-none focus:border-primary/60" />
+                    <button onClick={addWorkProject} className="rounded-xl px-4 py-2.5 text-sm font-bold text-white" style={{ background: "var(--primary)" }}>Salvar</button>
+                    <button onClick={() => setAddingProject(false)} className="grid h-10 w-10 place-items-center rounded-xl border border-border text-text-muted"><X size={15} /></button>
+                  </div>
+                ) : (
+                  <button onClick={() => setAddingProject(true)} className="mt-1 flex w-full items-center gap-2 rounded-xl border border-dashed border-border px-3 py-2.5 text-sm text-text-muted transition-colors hover:border-primary/50 hover:text-primary">
+                    <Plus size={15} /> Novo projeto
                   </button>
                 )}
               </div>

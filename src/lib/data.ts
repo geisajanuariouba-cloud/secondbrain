@@ -614,9 +614,10 @@ export type BudgetCategory = {
 export const BUDGET_CATEGORIES: BudgetCategory[] = [];
 
 // ---- Trabalho ----
+// "project" referencia o id de um WorkProject (src/lib/work-projects.ts), configurável em Configurações.
 export type WorkSession = {
   id: string;
-  project: "Salão" | "Sypoza" | "Optimio";
+  project: string;
   description: string;
   date: string;
   hours: number;
@@ -627,7 +628,7 @@ export const WORK_SESSIONS: WorkSession[] = [];
 
 export type WorkTask = {
   id: string;
-  project: "Salão" | "Sypoza" | "Optimio" | "Pessoal";
+  project: string; // id de um WorkProject, ou "Pessoal" para tarefas sem projeto
   name: string;
   status: "Não iniciada" | "Em andamento" | "Concluída";
   priority: "Alta" | "Média" | "Baixa";

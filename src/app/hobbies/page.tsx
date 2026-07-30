@@ -12,7 +12,7 @@ type HobbyProject = {
   name: string;
   description: string;
   status: "Ativo" | "Em pausa" | "Concluído" | "Ideia";
-  category: "Negócio" | "Criativo" | "Pessoal";
+  category: "Criativo" | "Pessoal";
   color: string;
   hours?: number;
 };
@@ -45,7 +45,6 @@ const STATUS_ICONS: Record<string, React.ReactNode> = {
 };
 
 const CATEGORY_COLORS: Record<string, string> = {
-  Negócio: "var(--c-amber)",
   Criativo: "var(--c-rose)",
   Pessoal: "var(--c-cyan)",
 };
@@ -160,27 +159,27 @@ export default function HobbiesPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-7">
       <PageHeader
-        title="Hobbies & Projetos"
-        subtitle="Vida além dos estudos"
+        title="Hobbies"
+        subtitle="Vida além dos estudos e do trabalho"
         icon={<Palette size={24} />}
         accent="var(--c-cyan)"
-        action={<Badge color="var(--c-cyan)">{active.length} projetos ativos</Badge>}
+        action={<Badge color="var(--c-cyan)">{active.length} hobbies ativos</Badge>}
       />
 
-      {/* Projetos */}
+      {/* Hobbies */}
       <Card>
         <div className="flex items-center justify-between">
           <SectionTitle>
             <span className="flex items-center gap-2">
               <Lightbulb size={16} style={{ color: "var(--c-cyan)" }} />
-              Projetos pessoais
+              Meus hobbies
             </span>
           </SectionTitle>
           <button
             onClick={() => setShowProjectForm((v) => !v)}
             className="flex items-center gap-1.5 rounded-xl border border-border px-3 py-1.5 text-xs font-semibold text-text-muted hover:text-text hover:bg-surface-2 transition-colors"
           >
-            <Plus size={13} /> Novo projeto
+            <Plus size={13} /> Novo hobby
           </button>
         </div>
 
@@ -195,7 +194,7 @@ export default function HobbiesPage() {
             >
               <div className="mt-3 rounded-2xl border border-border bg-surface-2/40 p-4">
                 <div className="flex items-center justify-between mb-3">
-                  <p className="text-sm font-bold">Novo projeto</p>
+                  <p className="text-sm font-bold">Novo hobby</p>
                   <button onClick={() => setShowProjectForm(false)} className="text-text-muted hover:text-text">
                     <X size={15} />
                   </button>
@@ -205,7 +204,7 @@ export default function HobbiesPage() {
                     <label className="mb-1 block text-xs font-semibold text-text-muted">Nome</label>
                     <input
                       className="w-full rounded-xl border border-border bg-surface px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-c-cyan/40"
-                      placeholder="Ex: App de produtividade"
+                      placeholder="Ex: Aprender violão"
                       value={projectForm.name}
                       onChange={(e) => setProjectForm({ ...projectForm, name: e.target.value })}
                     />
@@ -217,7 +216,7 @@ export default function HobbiesPage() {
                       value={projectForm.category}
                       onChange={(e) => setProjectForm({ ...projectForm, category: e.target.value as HobbyProject["category"] })}
                     >
-                      {["Negócio", "Criativo", "Pessoal"].map((c) => (
+                      {["Criativo", "Pessoal"].map((c) => (
                         <option key={c} value={c}>{c}</option>
                       ))}
                     </select>
