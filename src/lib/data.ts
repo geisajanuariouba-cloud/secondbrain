@@ -153,6 +153,13 @@ export const DEFAULT_ACCOUNTS: BankAccount[] = [
   { id: "acc-kast",           name: "Kast",           bank: "Kast",        type: "Digital",    balance: 0, color: "var(--c-cyan)",   emoji: "🩵" },
   { id: "acc-ton",            name: "Ton (Salão)",    bank: "Ton",         type: "Empresarial",balance: 0, color: "var(--c-rose)",   emoji: "🩷" },
   { id: "acc-pagbank",        name: "PagBank",        bank: "PagBank",     type: "Digital",    balance: 0, color: "var(--secondary)",emoji: "🔵" },
+  // Recebe entradas e distribui 50% Nubank/Mercado Pago (até cobrir gastos mensais) + 50% Kast
+  { id: "acc-inter-mae",      name: "Inter Mãe",      bank: "Banco Inter", type: "Corrente",   balance: 0, color: "var(--c-blue)",   emoji: "👩" },
+  // Maquininha — 100% das vendas vai para a Inter Mãe
+  { id: "acc-stone",          name: "Stone (Salão)",  bank: "Stone",       type: "Empresarial",balance: 0, color: "var(--text-muted)",emoji: "🟢" },
+  { id: "acc-santander",      name: "Santander (parada por enquanto)", bank: "Santander", type: "Corrente", balance: 0, color: "var(--danger)",   emoji: "🔴" },
+  { id: "acc-itau",           name: "Itaú (parado por enquanto)",      bank: "Itaú",      type: "Corrente", balance: 0, color: "var(--c-amber)",  emoji: "🟧" },
+  { id: "acc-pagseguro",      name: "PagSeguro (inativa)",             bank: "PagSeguro", type: "Digital",  balance: 0, color: "var(--text-muted)", emoji: "⚪" },
 ];
 
 export const TRANSACTIONS: Transaction[] = [];
@@ -614,7 +621,32 @@ export type RecurringExpense = {
   emoji: string;
 };
 
-export const RECURRING_EXPENSES: RecurringExpense[] = [];
+// Gastos mensais fixos (transcritos do caderno) — datas de vencimento (nextDue) são estimativas,
+// ajuste conforme a data real de cada conta. Não inclui itens marcados "x" no caderno (Higgsfield,
+// ChatGPT, Academia) por não estarem sendo cobrados no momento.
+export const RECURRING_EXPENSES: RecurringExpense[] = [
+  // Casa — total 1.080
+  { id: "re-agua", name: "Água", value: 150, frequency: "Mensal", category: "Casa", nextDue: "2026-08-05", paid: false, color: "var(--c-blue)", emoji: "💧" },
+  { id: "re-luz", name: "Luz", value: 300, frequency: "Mensal", category: "Casa", nextDue: "2026-08-05", paid: false, color: "var(--c-amber)", emoji: "💡" },
+  { id: "re-internet", name: "Internet", value: 220, frequency: "Mensal", category: "Casa", nextDue: "2026-08-05", paid: false, color: "var(--c-cyan)", emoji: "📶" },
+  { id: "re-alimentacao-casa", name: "Alimentação (casa)", value: 100, frequency: "Mensal", category: "Casa", nextDue: "2026-08-05", paid: false, color: "var(--c-green)", emoji: "🍽️" },
+  { id: "re-van", name: "Van", value: 310, frequency: "Mensal", category: "Casa", nextDue: "2026-08-05", paid: false, color: "var(--text-muted)", emoji: "🚐" },
+
+  // Pessoal — assinaturas e gastos fixos
+  { id: "re-discord", name: "Discord", value: 26, frequency: "Mensal", category: "Assinaturas", nextDue: "2026-08-05", paid: false, color: "var(--secondary)", emoji: "🎮" },
+  { id: "re-netflix", name: "Netflix", value: 50, frequency: "Mensal", category: "Assinaturas", nextDue: "2026-08-05", paid: false, color: "var(--danger)", emoji: "📺" },
+  { id: "re-claude", name: "Claude", value: 110, frequency: "Mensal", category: "Assinaturas", nextDue: "2026-08-05", paid: false, color: "var(--accent)", emoji: "🤖" },
+  { id: "re-google-one", name: "Google One", value: 50, frequency: "Mensal", category: "Assinaturas", nextDue: "2026-08-05", paid: false, color: "var(--c-blue)", emoji: "☁️" },
+  { id: "re-spotify", name: "Spotify", value: 25, frequency: "Mensal", category: "Assinaturas", nextDue: "2026-08-05", paid: false, color: "var(--c-green)", emoji: "🎵" },
+  { id: "re-cartao", name: "Cartão de crédito", value: 2000, frequency: "Mensal", category: "Pessoal", nextDue: "2026-08-05", paid: false, color: "var(--c-rose)", emoji: "💳" },
+  { id: "re-livros", name: "Livros", value: 330, frequency: "Mensal", category: "Pessoal", nextDue: "2026-08-05", paid: false, color: "var(--secondary)", emoji: "📚" },
+  { id: "re-assaad", name: "Plataforma Assaad", value: 300, frequency: "Mensal", category: "Estudos", nextDue: "2026-08-05", paid: false, color: "var(--secondary)", emoji: "📖" },
+  { id: "re-escola", name: "Escola", value: 1900, frequency: "Mensal", category: "Estudos", nextDue: "2026-08-05", paid: false, color: "var(--secondary)", emoji: "🏫" },
+  { id: "re-utmify", name: "Utmify", value: 250, frequency: "Mensal", category: "Trabalho", nextDue: "2026-08-05", paid: false, color: "var(--c-amber)", emoji: "📊" },
+
+  // Salão
+  { id: "re-raykou", name: "Raykou", value: 600, frequency: "Mensal", category: "Salão", nextDue: "2026-08-05", paid: false, color: "var(--c-lilac)", emoji: "💇‍♀️" },
+];
 
 // ---- Orçamento (% por categoria) ----
 export type BudgetCategory = {
@@ -626,7 +658,12 @@ export type BudgetCategory = {
   color: string;
 };
 
-export const BUDGET_CATEGORIES: BudgetCategory[] = [];
+// Baseado nos gastos fixos mensais do caderno: Casa 1.080 · Pessoal 5.041 (inclui escola/utmify) · Salão 600
+export const BUDGET_CATEGORIES: BudgetCategory[] = [
+  { id: "bc-casa", name: "Casa", emoji: "🏠", percentage: 16, spent: 1080, color: "var(--c-blue)" },
+  { id: "bc-pessoal", name: "Pessoal", emoji: "🙋‍♀️", percentage: 75, spent: 5041, color: "var(--c-rose)" },
+  { id: "bc-salao", name: "Salão", emoji: "💇‍♀️", percentage: 9, spent: 600, color: "var(--c-lilac)" },
+];
 
 // ---- Trabalho ----
 // "project" referencia o id de um WorkProject (src/lib/work-projects.ts), configurável em Configurações.

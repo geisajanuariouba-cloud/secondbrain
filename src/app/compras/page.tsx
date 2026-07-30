@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { ShoppingBag, Check, MapPin, Heart, Star, DollarSign, Plus, X } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -35,10 +35,36 @@ const TRIP_EMOJIS: Record<string, string> = {
   Realizada: "🎉",
 };
 
+const STORAGE_KEY = "compras-shopping-list";
+
+function loadShoppingList(): ShoppingItem[] {
+  if (typeof window === "undefined") return SHOPPING_LIST;
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (!saved) return SHOPPING_LIST;
+    const savedList: ShoppingItem[] = JSON.parse(saved);
+    const savedMap = new Map(savedList.map((i) => [i.id, i]));
+    const baseIds = new Set(SHOPPING_LIST.map((i) => i.id));
+    const merged = SHOPPING_LIST.map((i) => savedMap.get(i.id) ?? i);
+    const userAdded = savedList.filter((i) => !baseIds.has(i.id));
+    return [...merged, ...userAdded];
+  } catch {
+    return SHOPPING_LIST;
+  }
+}
+
 export default function ComprasPage() {
-  const [items, setItems] = useState(SHOPPING_LIST);
+  const [items, setItems] = useState<ShoppingItem[]>(SHOPPING_LIST);
   const [adding, setAdding] = useState(false);
   const [newItem, setNewItem] = useState({ name: "", category: "Estudos" as ShoppingItem["category"], priority: "Média" as ShoppingItem["priority"] });
+
+  useEffect(() => {
+    setItems(loadShoppingList());
+  }, []);
+
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
+  }, [items]);
 
   const toggle = (id: string) =>
     setItems((prev) => prev.map((i) => i.id === id ? { ...i, bought: !i.bought } : i));
