@@ -285,9 +285,24 @@ export type ShoppingItem = {
   price?: number;
   bought: boolean;
 };
-export const SHOPPING_LIST: ShoppingItem[] = [];
+export const SHOPPING_LIST: ShoppingItem[] = [
+  { id: "sh-1", name: "Aplique de cabelo", category: "Pessoal", priority: "Média", bought: false },
+  { id: "sh-2", name: "Umidificador", category: "Casa", priority: "Média", bought: false },
+  { id: "sh-3", name: "Essência de lavanda", category: "Casa", priority: "Baixa", bought: false },
+  { id: "sh-4", name: "Perfume", category: "Pessoal", priority: "Baixa", bought: false },
+  { id: "sh-5", name: "Material escolar (semestral)", category: "Estudos", priority: "Alta", bought: false },
+];
 export type WishlistItem = { id: string; name: string; price?: number; link?: string; priority: "Alta" | "Média" | "Baixa" };
-export const WISHLIST: WishlistItem[] = [];
+export const WISHLIST: WishlistItem[] = [
+  { id: "wi-1", name: "PC novo", priority: "Alta" },
+  { id: "wi-2", name: "MacBook", priority: "Alta" },
+  { id: "wi-3", name: "Teclado (PC)", priority: "Média" },
+  { id: "wi-4", name: "Fone de ouvido", priority: "Média" },
+  { id: "wi-5", name: "Microfone", priority: "Média" },
+  { id: "wi-6", name: "Suporte para microfone", priority: "Baixa" },
+  { id: "wi-7", name: "Fans (PC)", priority: "Baixa" },
+  { id: "wi-8", name: "Câmera digital", priority: "Média" },
+];
 export type Trip = {
   id: string;
   destination: string;
