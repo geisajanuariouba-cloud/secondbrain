@@ -19,6 +19,7 @@ import {
   type DayKey, type Habit, type HabitCategory, type TimeOfDay,
 } from "@/lib/habits";
 import { pct } from "@/lib/utils";
+import { todayLocalISO } from "@/lib/date-utils";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -58,7 +59,7 @@ type Tab = "rotina" | "configuracoes";
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getTodayDate() {
-  return new Date().toISOString().split("T")[0];
+  return todayLocalISO();
 }
 
 const WEEKDAY_BY_INDEX: Record<number, DayKey> = {

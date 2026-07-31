@@ -14,6 +14,7 @@ import { VESTIBULARES_TARGETS } from "@/lib/data";
 import { registrationStatus } from "@/lib/vestibulares-registrations";
 import { VESTIBULAR_TOPICS, getTopicsBySubject } from "@/lib/vestibular-content";
 import { daysUntil } from "@/lib/data";
+import { todayLocalISO } from "@/lib/date-utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -142,7 +143,7 @@ export default function VestibularesPage() {
   // currentPhases: vestibularId → phase index (0-based). -1 = manual override disabled auto
   const [currentPhases, setCurrentPhases] = useState<Record<string, number>>({});
 
-  const todayStr = new Date().toISOString().slice(0, 10);
+  const todayStr = todayLocalISO();
 
   // Auto-compute current phase for a seriado vestibular based on today's date
   function autoCurrentPhase(v: VestibularEntry): number {

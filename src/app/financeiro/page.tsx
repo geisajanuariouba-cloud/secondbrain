@@ -13,6 +13,7 @@ import {
   TRANSACTIONS, BUDGET_CATEGORIES, RECURRING_EXPENSES, DEFAULT_ACCOUNTS,
   type RecurringExpense, type Transaction, type BankAccount,
 } from "@/lib/data";
+import { todayLocalISO } from "@/lib/date-utils";
 
 const TABS = ["Visão Geral", "Contas", "Recorrentes", "Orçamento"] as const;
 type Tab = typeof TABS[number];
@@ -33,7 +34,7 @@ function formatBRL(v: number) {
 function pct(v: number, total: number) { return total ? Math.min(100, (v / total) * 100) : 0; }
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  return todayLocalISO();
 }
 
 // ── Form de transação ──

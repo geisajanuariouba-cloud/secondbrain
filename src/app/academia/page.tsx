@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { StatCard } from "@/components/ui/stat-card";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { EXERCISES } from "@/lib/data";
+import { todayLocalISO } from "@/lib/date-utils";
 
 const CATEGORY_NAMES: Record<string, string> = {
   A: "Inferiores", B: "Costas & Bíceps", C: "Ombros & Tríceps", D: "Core", E: "Cardio",
@@ -25,7 +26,7 @@ type WorkoutLog = {
 };
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  return todayLocalISO();
 }
 
 export default function AcademiaPage() {
@@ -67,7 +68,7 @@ export default function AcademiaPage() {
     const dates = new Set(logs.map((l) => l.date));
     let count = 0;
     const d = new Date();
-    while (dates.has(d.toISOString().slice(0, 10))) {
+    while (dates.has(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`)) {
       count++;
       d.setDate(d.getDate() - 1);
     }

@@ -14,6 +14,7 @@ import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress";
 import { SUBJECTS, CONTENTS, type SubjectKey } from "@/lib/data";
 import { formatHours, pct } from "@/lib/utils";
+import { todayLocalISO } from "@/lib/date-utils";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -50,7 +51,7 @@ const STEP_LABELS = ["Aula", "Leitura", "Exercícios", "Revisão", "Domínio"];
 const STEP_KEYS = ["aula", "leitura", "exercicios", "revisao", "dominio"] as const;
 const TASK_TYPES: SchoolTask["type"][] = ["Trabalho", "Apresentação", "Prova", "Lista", "Projeto", "Outro"];
 
-function todayISO() { return new Date().toISOString().slice(0, 10); }
+function todayISO() { return todayLocalISO(); }
 function addDays(date: string, n: number) {
   const d = new Date(date + "T12:00:00");
   d.setDate(d.getDate() + n);

@@ -17,6 +17,7 @@ import {
   type Simulation, type LiteraryWork, type Article,
 } from "@/lib/data";
 import { formatHours, pct } from "@/lib/utils";
+import { todayLocalISO } from "@/lib/date-utils";
 
 const STEP_LABELS: Record<string, string> = {
   aula: "Aula", leitura: "Leitura", exercicios: "Exercícios", revisao: "Revisão", dominio: "Domínio",
@@ -74,7 +75,7 @@ export default function EstudosPage() {
   // Simulados
   const [simulations, setSimulations] = useState<ExtSimulation[]>(SIMULATIONS);
   const [showSimForm, setShowSimForm] = useState(false);
-  const [simForm, setSimForm] = useState({ name: "", type: "ENEM" as Simulation["type"], date: new Date().toISOString().slice(0, 10), total: "", correct: "", notes: "" });
+  const [simForm, setSimForm] = useState({ name: "", type: "ENEM" as Simulation["type"], date: todayLocalISO(), total: "", correct: "", notes: "" });
 
   // Obras literárias
   const [works, setWorks] = useState<RichLiteraryWork[]>(LITERARY_WORKS);
@@ -118,7 +119,7 @@ export default function EstudosPage() {
   function addSimulation() {
     if (!simForm.name.trim() || !simForm.total || !simForm.correct) return;
     saveSimulations([{ id: `sim-${Date.now()}`, name: simForm.name.trim(), type: simForm.type, date: simForm.date, total: Number(simForm.total), correct: Number(simForm.correct), notes: simForm.notes }, ...simulations]);
-    setSimForm({ name: "", type: "ENEM", date: new Date().toISOString().slice(0, 10), total: "", correct: "", notes: "" });
+    setSimForm({ name: "", type: "ENEM", date: todayLocalISO(), total: "", correct: "", notes: "" });
     setShowSimForm(false);
   }
 

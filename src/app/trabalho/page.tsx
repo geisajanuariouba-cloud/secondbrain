@@ -8,6 +8,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { WORK_SESSIONS, WORK_TASKS, type WorkTask, type WorkSession } from "@/lib/data";
 import { loadWorkProjects, type WorkProject } from "@/lib/work-projects";
+import { todayLocalISO } from "@/lib/date-utils";
 
 const PESSOAL_META = { id: "Pessoal", name: "Pessoal", color: "var(--c-amber)", emoji: "🙋‍♀️", description: "Tarefas pessoais" };
 
@@ -26,7 +27,7 @@ const STATUS_ICON: Record<WorkTask["status"], React.ReactNode> = {
 };
 
 function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  return todayLocalISO();
 }
 
 const inputClass = "w-full rounded-xl border border-border bg-surface-2 px-3 py-2 text-sm outline-none focus:border-primary transition-colors";

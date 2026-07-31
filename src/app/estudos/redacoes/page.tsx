@@ -6,6 +6,7 @@ import { ClipboardList, Plus, Star, ChevronLeft, X } from "lucide-react";
 import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
+import { todayLocalISO } from "@/lib/date-utils";
 
 type Redacao = {
   id: string;
@@ -94,7 +95,7 @@ export default function RedacoesPage() {
         id: `re${Date.now()}`,
         tema: newTema,
         vestibular: newVestibular,
-        date: new Date().toISOString().slice(0, 10),
+        date: todayLocalISO(),
         nota,
         criterios: { comp: per, estrutura: per, coesao: per, argumentacao: per, proposta: per },
         pontos_fortes: newPontosFortes ? newPontosFortes.split("\n").map((s) => s.trim()).filter(Boolean) : [],

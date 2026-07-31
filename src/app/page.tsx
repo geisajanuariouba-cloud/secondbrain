@@ -13,9 +13,10 @@ import {
 } from "@/lib/data";
 import { formatCurrency, formatHours, formatHours as fh, pct } from "@/lib/utils";
 import { DEFAULT_HABITS_BY_DAY, getTodayKey, type Habit } from "@/lib/habits";
+import { todayLocalISO } from "@/lib/date-utils";
 
 function getTodayDate() {
-  return new Date().toISOString().slice(0, 10);
+  return todayLocalISO();
 }
 
 type ExtraTask = { id: string; name: string; time: string; category: string };

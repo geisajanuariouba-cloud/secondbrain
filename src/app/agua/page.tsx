@@ -8,6 +8,7 @@ import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { ProgressRing } from "@/components/ui/progress";
 import { WATER_HISTORY } from "@/lib/data";
 import { pct } from "@/lib/utils";
+import { todayLocalISO } from "@/lib/date-utils";
 
 const GOAL = 8;
 const TIPS = [
@@ -21,7 +22,7 @@ const TIPS = [
 const DAY_LABELS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
 function getTodayDate() {
-  return new Date().toISOString().slice(0, 10);
+  return todayLocalISO();
 }
 
 function getGlassesForDate(date: string): number {

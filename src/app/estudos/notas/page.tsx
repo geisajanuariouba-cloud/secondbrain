@@ -7,6 +7,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { SUBJECTS } from "@/lib/data";
+import { todayLocalISO } from "@/lib/date-utils";
 
 type Note = {
   id: string;
@@ -80,7 +81,7 @@ export default function NotasPage() {
       subject: newSubject,
       title: newTitle,
       content: newContent,
-      date: new Date().toISOString().slice(0, 10),
+      date: todayLocalISO(),
       color: subject?.color ?? "var(--text-muted)",
     }, ...prev]);
     setNewTitle(""); setNewContent(""); setShowForm(false);

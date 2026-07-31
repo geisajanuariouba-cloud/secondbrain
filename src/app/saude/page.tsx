@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { ProgressBar } from "@/components/ui/progress";
 import { BODY_MEASUREMENTS, DIET_GOALS } from "@/lib/data";
+import { todayLocalISO } from "@/lib/date-utils";
 
 const TABS = ["Corpo", "Nutrição", "Treino"] as const;
 type Tab = typeof TABS[number];
@@ -28,7 +29,7 @@ function CorpoTab() {
   const addMeasurement = () => {
     const w = parseFloat(newWeight);
     if (!w || isNaN(w)) return;
-    const today = new Date().toISOString().slice(0, 10);
+    const today = todayLocalISO();
     setMeasurements((prev) => [...prev, { date: today, weight: w }]);
     setNewWeight("");
   };

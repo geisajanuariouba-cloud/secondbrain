@@ -1,4 +1,5 @@
 import { SKINCARE_MORNING, SKINCARE_EVENING, type SkinStep } from "@/lib/data";
+import { todayLocalISO } from "@/lib/date-utils";
 
 // Estado do skincare de um dia específico (data real, não dia da semana), compartilhado
 // entre a tela de Self Care (passo a passo) e a Rotina (um único check "Skincare manhã/noite").
@@ -58,5 +59,5 @@ export function setSkincarePeriodComplete(dateISO: string, period: "morning" | "
 }
 
 export function todayISO() {
-  return new Date().toISOString().slice(0, 10);
+  return todayLocalISO();
 }

@@ -15,11 +15,12 @@ import {
   type MealLogEntry, type StockItem, type FoodShoppingItem, type Measurements, type Macros,
 } from "@/lib/nutrition";
 import { pct } from "@/lib/utils";
+import { todayLocalISO } from "@/lib/date-utils";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function getTodayDate() {
-  return new Date().toISOString().split("T")[0];
+  return todayLocalISO();
 }
 
 function formatDate(d: string) {

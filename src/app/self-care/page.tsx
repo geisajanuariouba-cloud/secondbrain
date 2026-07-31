@@ -7,6 +7,7 @@ import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { SKINCARE_MORNING, SKINCARE_EVENING, WEEKLY_CARE, MOOD_LOG, GRATITUDE_LOG, type SkinStep, type WeeklyCareItem, type MoodEntry } from "@/lib/data";
 import { loadSkincareSteps, toggleSkincareStep } from "@/lib/skincare-store";
+import { todayLocalISO } from "@/lib/date-utils";
 
 const WEEKLY_CARE_KEY = "self-care-weekly";
 
@@ -21,7 +22,7 @@ const MOOD_LABELS: Record<number, { label: string; emoji: string; color: string 
 const DAY_LABELS = ["Seg", "Ter", "Qua", "Qui", "Sex", "Sáb", "Dom"];
 
 function getTodayISO() {
-  return new Date().toISOString().slice(0, 10);
+  return todayLocalISO();
 }
 
 export default function SelfCarePage() {

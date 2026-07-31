@@ -1,4 +1,5 @@
 import { VESTIBULARES_TARGETS } from "@/lib/data";
+import { todayLocalISO } from "@/lib/date-utils";
 
 export type VestibularRegistration = {
   id: string;
@@ -56,6 +57,6 @@ export function loadVestibularRegistrations(): VestibularRegistration[] {
 
 /** Vestibulares the user is preparing for, whose registration is currently open and not yet done. */
 export function pendingOpenRegistrations(): VestibularRegistration[] {
-  const today = new Date().toISOString().slice(0, 10);
+  const today = todayLocalISO();
   return loadVestibularRegistrations().filter((v) => v.selected && registrationStatus(v, today) === "open");
 }
