@@ -47,6 +47,7 @@ export const DEFAULT_HABITS_BY_DAY: Record<DayKey, Habit[]> = {
     { id: "seg-15", name: "Flashcards a revisar (todos os decks do dia)", timeOfDay: "Noite", category: "Estudos", time: "19:50" },
     { id: "seg-16", name: "Jantar e trabalhar — preparar dia seguinte", timeOfDay: "Noite", category: "Trabalho", time: "20:00" },
     { id: "skincare-noite", name: "Skincare noite", timeOfDay: "Noite", category: "Self care", time: "21:45" },
+    { id: "seg-carregadores", name: "Colocar aparelhos para carregar", timeOfDay: "Noite", category: "Rotina", time: "21:55" },
     { id: "seg-17", name: "Ler e dormir", timeOfDay: "Noite", category: "Lazer", time: "22:00" },
   ],
   Terça: [
@@ -64,6 +65,7 @@ export const DEFAULT_HABITS_BY_DAY: Record<DayKey, Habit[]> = {
     { id: "ter-11", name: "Flashcards a revisar (todos os decks do dia)", timeOfDay: "Noite", category: "Estudos", time: "20:45" },
     { id: "ter-12", name: "Trabalhar — preparar dia seguinte", timeOfDay: "Noite", category: "Trabalho", time: "21:00" },
     { id: "skincare-noite", name: "Skincare noite", timeOfDay: "Noite", category: "Self care", time: "21:45" },
+    { id: "ter-carregadores", name: "Colocar aparelhos para carregar", timeOfDay: "Noite", category: "Rotina", time: "21:55" },
     { id: "ter-13", name: "Ler e dormir", timeOfDay: "Noite", category: "Lazer", time: "22:00" },
   ],
   Quarta: [
@@ -81,6 +83,7 @@ export const DEFAULT_HABITS_BY_DAY: Record<DayKey, Habit[]> = {
     { id: "qua-11", name: "Flashcards a revisar (todos os decks do dia)", timeOfDay: "Noite", category: "Estudos", time: "20:40" },
     { id: "qua-12", name: "Trabalhar — preparar dia seguinte", timeOfDay: "Noite", category: "Trabalho", time: "21:00" },
     { id: "skincare-noite", name: "Skincare noite", timeOfDay: "Noite", category: "Self care", time: "21:45" },
+    { id: "qua-carregadores", name: "Colocar aparelhos para carregar", timeOfDay: "Noite", category: "Rotina", time: "21:55" },
     { id: "qua-13", name: "Ler e dormir", timeOfDay: "Noite", category: "Lazer", time: "22:00" },
   ],
   Quinta: [
@@ -104,6 +107,7 @@ export const DEFAULT_HABITS_BY_DAY: Record<DayKey, Habit[]> = {
     { id: "qui-17", name: "Flashcards a revisar (todos os decks do dia)", timeOfDay: "Noite", category: "Estudos", time: "18:50" },
     { id: "qui-18", name: "Jantar e trabalhar — preparar dia seguinte", timeOfDay: "Noite", category: "Trabalho", time: "19:00" },
     { id: "skincare-noite", name: "Skincare noite", timeOfDay: "Noite", category: "Self care", time: "21:45" },
+    { id: "qui-carregadores", name: "Colocar aparelhos para carregar", timeOfDay: "Noite", category: "Rotina", time: "21:55" },
     { id: "qui-19", name: "Ler e dormir", timeOfDay: "Noite", category: "Lazer", time: "22:00" },
   ],
   Sexta: [
@@ -124,6 +128,7 @@ export const DEFAULT_HABITS_BY_DAY: Record<DayKey, Habit[]> = {
     { id: "sex-14", name: "Flashcards a revisar (todos os decks do dia)", timeOfDay: "Noite", category: "Estudos", time: "18:30" },
     { id: "sex-15", name: "Jantar e trabalhar — preparar dia seguinte", timeOfDay: "Noite", category: "Trabalho", time: "19:00" },
     { id: "skincare-noite", name: "Skincare noite", timeOfDay: "Noite", category: "Self care", time: "21:45" },
+    { id: "sex-carregadores", name: "Colocar aparelhos para carregar", timeOfDay: "Noite", category: "Rotina", time: "21:55" },
     { id: "sex-16", name: "Ler e dormir", timeOfDay: "Noite", category: "Lazer", time: "22:00" },
   ],
   Sábado: [
@@ -143,6 +148,7 @@ export const DEFAULT_HABITS_BY_DAY: Record<DayKey, Habit[]> = {
     { id: "sab-13", name: "Jantar e estudar Marketing Digital e IA (preparar dia seguinte)", timeOfDay: "Noite", category: "Trabalho", time: "20:30" },
     { id: "sab-14", name: "Flashcards a revisar (todos os decks do dia)", timeOfDay: "Noite", category: "Estudos", time: "21:30" },
     { id: "skincare-noite", name: "Skincare noite", timeOfDay: "Noite", category: "Self care", time: "21:45" },
+    { id: "sab-carregadores", name: "Colocar aparelhos para carregar", timeOfDay: "Noite", category: "Rotina", time: "21:55" },
     { id: "sab-15", name: "Ler e dormir", timeOfDay: "Noite", category: "Lazer", time: "22:00" },
   ],
   Domingo: [
@@ -165,6 +171,7 @@ export const DEFAULT_HABITS_BY_DAY: Record<DayKey, Habit[]> = {
     { id: "dom-9", name: "Redação", timeOfDay: "Noite", category: "Estudos", time: "19:30" },
     { id: "dom-10", name: "Organizar a semana (tópicos de estudo e trabalho)", timeOfDay: "Noite", category: "Rotina", time: "21:30" },
     { id: "skincare-noite", name: "Skincare noite", timeOfDay: "Noite", category: "Self care", time: "21:45" },
+    { id: "dom-carregadores", name: "Colocar aparelhos para carregar", timeOfDay: "Noite", category: "Rotina", time: "21:55" },
     { id: "dom-11", name: "Ler e dormir", timeOfDay: "Noite", category: "Lazer", time: "22:00" },
   ],
 };
