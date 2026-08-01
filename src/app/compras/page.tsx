@@ -5,7 +5,7 @@ import { motion } from "framer-motion";
 import { ShoppingBag, Check, MapPin, Heart, Star, DollarSign, Plus, X } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
 import { Card, SectionTitle, Badge } from "@/components/ui/card";
-import { SHOPPING_LIST, WISHLIST, TRIPS, type ShoppingItem } from "@/lib/data";
+import { SHOPPING_LIST, WISHLIST, TRIPS, type ShoppingItem, type Trip } from "@/lib/data";
 
 const PRIORITY_COLORS = {
   Alta: "var(--danger)",
@@ -36,6 +36,31 @@ const TRIP_EMOJIS: Record<string, string> = {
 };
 
 const STORAGE_KEY = "compras-shopping-list";
+const TRIPS_STORAGE_KEY = "compras-trips";
+const TRIPS_SEEDED_KEY = "compras-trips-seeded";
+
+const HEIST_TRIPS: Trip[] = [
+  { id: "trip-rio", destination: "Rio de Janeiro", status: "Sonho", notes: "La Casa de Papel 🎭" },
+  { id: "trip-tokyo", destination: "Tóquio", status: "Sonho", notes: "La Casa de Papel 🎭" },
+  { id: "trip-nairobi", destination: "Nairóbi", status: "Sonho", notes: "La Casa de Papel 🎭" },
+  { id: "trip-moscow", destination: "Moscou", status: "Sonho", notes: "La Casa de Papel 🎭" },
+  { id: "trip-denver", destination: "Denver", status: "Sonho", notes: "La Casa de Papel 🎭" },
+  { id: "trip-oslo", destination: "Oslo", status: "Sonho", notes: "La Casa de Papel 🎭" },
+  { id: "trip-helsinki", destination: "Helsinque", status: "Sonho", notes: "La Casa de Papel 🎭" },
+  { id: "trip-berlim", destination: "Berlim", status: "Sonho", notes: "La Casa de Papel 🎭" },
+];
+
+function loadTrips(): Trip[] {
+  if (typeof window === "undefined") return TRIPS;
+  try {
+    const seeded = localStorage.getItem(TRIPS_SEEDED_KEY);
+    if (!seeded) return HEIST_TRIPS;
+    const saved = localStorage.getItem(TRIPS_STORAGE_KEY);
+    return saved ? JSON.parse(saved) : TRIPS;
+  } catch {
+    return HEIST_TRIPS;
+  }
+}
 
 function loadShoppingList(): ShoppingItem[] {
   if (typeof window === "undefined") return SHOPPING_LIST;
@@ -57,14 +82,27 @@ export default function ComprasPage() {
   const [items, setItems] = useState<ShoppingItem[]>(SHOPPING_LIST);
   const [adding, setAdding] = useState(false);
   const [newItem, setNewItem] = useState({ name: "", category: "Estudos" as ShoppingItem["category"], priority: "Média" as ShoppingItem["priority"] });
+  const [trips, setTrips] = useState<Trip[]>(TRIPS);
+  const [hydrated, setHydrated] = useState(false);
 
   useEffect(() => {
     setItems(loadShoppingList());
+    const loadedTrips = loadTrips();
+    setTrips(loadedTrips);
+    localStorage.setItem(TRIPS_SEEDED_KEY, "1");
+    localStorage.setItem(TRIPS_STORAGE_KEY, JSON.stringify(loadedTrips));
+    setHydrated(true);
   }, []);
 
   useEffect(() => {
+    if (!hydrated) return;
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items));
-  }, [items]);
+  }, [items, hydrated]);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    localStorage.setItem(TRIPS_STORAGE_KEY, JSON.stringify(trips));
+  }, [trips, hydrated]);
 
   const toggle = (id: string) =>
     setItems((prev) => prev.map((i) => i.id === id ? { ...i, bought: !i.bought } : i));
@@ -237,7 +275,7 @@ export default function ComprasPage() {
           </span>
         </SectionTitle>
         <div className="mt-3 space-y-3">
-          {TRIPS.map((trip, i) => (
+          {trips.map((trip, i) => (
             <motion.div
               key={trip.id}
               initial={{ opacity: 0, y: 8 }}
