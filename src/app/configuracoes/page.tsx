@@ -15,6 +15,10 @@ import { Card, SectionTitle, Badge } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { createClient } from "@/lib/supabase/client";
 import { loadWorkProjects, saveWorkProjects, DEFAULT_WORK_PROJECTS, type WorkProject } from "@/lib/work-projects";
+import {
+  loadNotifPrefs, saveNotifPrefs, type NotifPrefs,
+  enablePush, disablePush, isPushEnabled, isPushSupported,
+} from "@/lib/push-client";
 
 type Tab = "geral" | "notificacoes" | "automacoes" | "dados";
 
@@ -77,10 +81,39 @@ export default function ConfiguracoesPage() {
   const [newProjectName, setNewProjectName] = useState("");
   const [newProjectEmoji, setNewProjectEmoji] = useState("📌");
   const [newProjectDesc, setNewProjectDesc] = useState("");
+  const [notifPrefs, setNotifPrefs] = useState<NotifPrefs>(loadNotifPrefs());
+  const [pushEnabled, setPushEnabled] = useState(false);
+  const [pushLoading, setPushLoading] = useState(false);
+  const [pushError, setPushError] = useState("");
 
   useEffect(() => {
     setWorkProjects(loadWorkProjects());
+    setNotifPrefs(loadNotifPrefs());
+    isPushEnabled().then(setPushEnabled);
   }, []);
+
+  async function togglePush() {
+    setPushError("");
+    setPushLoading(true);
+    try {
+      if (pushEnabled) {
+        await disablePush();
+        setPushEnabled(false);
+      } else {
+        const res = await enablePush();
+        if (res.ok) setPushEnabled(true);
+        else setPushError(res.error ?? "Não foi possível ativar as notificações.");
+      }
+    } finally {
+      setPushLoading(false);
+    }
+  }
+
+  function updateNotifPref(key: keyof NotifPrefs, value: boolean) {
+    const next = { ...notifPrefs, [key]: value };
+    setNotifPrefs(next);
+    saveNotifPrefs(next);
+  }
 
   useEffect(() => {
     setMounted(true);
@@ -284,14 +317,34 @@ export default function ConfiguracoesPage() {
         {activeTab === "notificacoes" && (
           <motion.div key="notif" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-6">
             <Card>
-              <SectionTitle><span className="flex items-center gap-2"><Bell size={16} /> Notificações do sistema</span></SectionTitle>
+              <SectionTitle><span className="flex items-center gap-2"><Bell size={16} /> Notificações push</span></SectionTitle>
+              <p className="mt-1 text-xs text-text-muted">
+                Ative para receber notificações reais neste dispositivo, mesmo com o navegador fechado.
+              </p>
+              <div className="mt-3 flex items-center justify-between rounded-xl bg-surface-2/40 px-4 py-3">
+                <span className="text-sm font-medium">
+                  {pushEnabled ? "Notificações ativadas neste dispositivo" : "Ativar notificações neste dispositivo"}
+                </span>
+                <Switch on={pushEnabled} onToggle={togglePush} ariaLabel="Ativar notificações push" />
+              </div>
+              {pushLoading && <p className="mt-2 text-xs text-text-muted">Aguarde…</p>}
+              {pushError && <p className="mt-2 rounded-xl bg-danger/10 px-3 py-2 text-xs font-medium text-danger">{pushError}</p>}
+              {!isPushSupported() && (
+                <p className="mt-2 text-xs text-text-muted">
+                  Este navegador não suporta notificações push. No iPhone, adicione o app à Tela de Início (Safari) para habilitar.
+                </p>
+              )}
+            </Card>
+
+            <Card>
+              <SectionTitle><span className="flex items-center gap-2"><Bell size={16} /> O que notificar</span></SectionTitle>
               <div className="mt-3 space-y-2">
-                <Toggle label="Lembretes de revisão Anki" defaultOn />
-                <Toggle label="Lembrete de hidratação" defaultOn />
-                <Toggle label="Resumo diário de estudos" defaultOn />
-                <Toggle label="Alertas de vestibular (countdown)" defaultOn />
-                <Toggle label="Notificação de hábitos" />
-                <Toggle label="Metas próximas do prazo" />
+                <Toggle label="Lembretes de revisão Anki" checked={notifPrefs.anki} onChange={(v) => updateNotifPref("anki", v)} />
+                <Toggle label="Lembrete de hidratação" checked={notifPrefs.agua} onChange={(v) => updateNotifPref("agua", v)} />
+                <Toggle label="Resumo diário de estudos" checked={notifPrefs.resumoEstudos} onChange={(v) => updateNotifPref("resumoEstudos", v)} />
+                <Toggle label="Alertas de vestibular (countdown)" checked={notifPrefs.vestibular} onChange={(v) => updateNotifPref("vestibular", v)} />
+                <Toggle label="Notificação de hábitos" checked={notifPrefs.habitos} onChange={(v) => updateNotifPref("habitos", v)} />
+                <Toggle label="Metas próximas do prazo" checked={notifPrefs.metas} onChange={(v) => updateNotifPref("metas", v)} />
               </div>
             </Card>
           </motion.div>
@@ -913,12 +966,24 @@ function Row({ label, value, highlight = false }: { label: string; value: string
   );
 }
 
-function Toggle({ label, defaultOn = false }: { label: string; defaultOn?: boolean }) {
-  const [on, setOn] = useState(defaultOn);
+function Toggle({
+  label, defaultOn = false, checked, onChange,
+}: {
+  label: string;
+  defaultOn?: boolean;
+  checked?: boolean;
+  onChange?: (value: boolean) => void;
+}) {
+  const [uncontrolledOn, setUncontrolledOn] = useState(defaultOn);
+  const on = checked ?? uncontrolledOn;
+  const toggle = () => {
+    if (onChange) onChange(!on);
+    else setUncontrolledOn(!on);
+  };
   return (
     <div className="flex items-center justify-between rounded-xl bg-surface-2/40 px-4 py-3">
       <span className="text-sm font-medium">{label}</span>
-      <Switch on={on} onToggle={() => setOn(!on)} ariaLabel={label} />
+      <Switch on={on} onToggle={toggle} ariaLabel={label} />
     </div>
   );
 }
