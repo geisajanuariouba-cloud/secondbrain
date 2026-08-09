@@ -450,8 +450,35 @@ function Contas({ accounts, onUpdateBalance, transactions }: ContasProps) {
 }
 
 // ── Recorrentes ──
+const RECURRING_STORAGE_KEY = "financeiro-recorrentes-paid";
+
+function loadRecurringExpenses(): RecurringExpense[] {
+  if (typeof window === "undefined") return RECURRING_EXPENSES;
+  try {
+    const saved = localStorage.getItem(RECURRING_STORAGE_KEY);
+    if (!saved) return RECURRING_EXPENSES;
+    const paidMap: Record<string, boolean> = JSON.parse(saved);
+    return RECURRING_EXPENSES.map((e) => paidMap[e.id] !== undefined ? { ...e, paid: paidMap[e.id] } : e);
+  } catch {
+    return RECURRING_EXPENSES;
+  }
+}
+
 function Recorrentes() {
   const [items, setItems] = useState(RECURRING_EXPENSES);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setItems(loadRecurringExpenses());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    const paidMap: Record<string, boolean> = {};
+    items.forEach((e) => { paidMap[e.id] = e.paid; });
+    localStorage.setItem(RECURRING_STORAGE_KEY, JSON.stringify(paidMap));
+  }, [items, hydrated]);
 
   const togglePaid = (id: string) =>
     setItems((prev) => prev.map((e) => e.id === id ? { ...e, paid: !e.paid } : e));

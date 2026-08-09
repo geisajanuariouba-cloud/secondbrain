@@ -169,6 +169,38 @@ function SessionForm({ projects, onAdd, onClose }: SessionFormProps) {
   );
 }
 
+function loadTasks(): WorkTask[] {
+  if (typeof window === "undefined") return WORK_TASKS;
+  try {
+    const saved = localStorage.getItem("trabalho-tarefas");
+    if (!saved) return WORK_TASKS;
+    const savedList: WorkTask[] = JSON.parse(saved);
+    const savedMap = new Map(savedList.map((t) => [t.id, t]));
+    const baseIds = new Set(WORK_TASKS.map((t) => t.id));
+    const merged = WORK_TASKS.map((t) => savedMap.get(t.id) ?? t);
+    const userAdded = savedList.filter((t) => !baseIds.has(t.id));
+    return [...merged, ...userAdded];
+  } catch {
+    return WORK_TASKS;
+  }
+}
+
+function loadSessions(): WorkSession[] {
+  if (typeof window === "undefined") return WORK_SESSIONS;
+  try {
+    const saved = localStorage.getItem("trabalho-sessoes");
+    if (!saved) return WORK_SESSIONS;
+    const savedList: WorkSession[] = JSON.parse(saved);
+    const savedMap = new Map(savedList.map((s) => [s.id, s]));
+    const baseIds = new Set(WORK_SESSIONS.map((s) => s.id));
+    const merged = WORK_SESSIONS.map((s) => savedMap.get(s.id) ?? s);
+    const userAdded = savedList.filter((s) => !baseIds.has(s.id));
+    return [...merged, ...userAdded];
+  } catch {
+    return WORK_SESSIONS;
+  }
+}
+
 export default function TrabalhoPage() {
   const [projects, setProjects] = useState<WorkProject[]>([]);
   const [selectedProject, setSelectedProject] = useState<string>("Todos");
@@ -179,32 +211,19 @@ export default function TrabalhoPage() {
 
   useEffect(() => {
     setProjects(loadWorkProjects());
-
-    const savedTasks = localStorage.getItem("trabalho-tarefas");
-    if (savedTasks) {
-      const localTasks: WorkTask[] = JSON.parse(savedTasks);
-      const localIds = new Set(localTasks.map(t => t.id));
-      setTasks([...WORK_TASKS.filter(t => !localIds.has(t.id)), ...localTasks]);
-    }
-    const savedSessions = localStorage.getItem("trabalho-sessoes");
-    if (savedSessions) {
-      const localSessions: WorkSession[] = JSON.parse(savedSessions);
-      const localIds = new Set(localSessions.map(s => s.id));
-      setSessions([...WORK_SESSIONS.filter(s => !localIds.has(s.id)), ...localSessions]);
-    }
+    setTasks(loadTasks());
+    setSessions(loadSessions());
   }, []);
 
   const projectMeta = (id: string): WorkProject | typeof PESSOAL_META =>
     projects.find((p) => p.id === id) ?? PESSOAL_META;
 
   const saveTasks = (next: WorkTask[]) => {
-    const mockIds = new Set(WORK_TASKS.map(t => t.id));
-    localStorage.setItem("trabalho-tarefas", JSON.stringify(next.filter(t => !mockIds.has(t.id))));
+    localStorage.setItem("trabalho-tarefas", JSON.stringify(next));
   };
 
   const saveSessions = (next: WorkSession[]) => {
-    const mockIds = new Set(WORK_SESSIONS.map(s => s.id));
-    localStorage.setItem("trabalho-sessoes", JSON.stringify(next.filter(s => !mockIds.has(s.id))));
+    localStorage.setItem("trabalho-sessoes", JSON.stringify(next));
   };
 
   const toggleTask = (id: string) =>

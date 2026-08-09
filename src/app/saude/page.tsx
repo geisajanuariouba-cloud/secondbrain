@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { HeartPulse, Scale, Utensils, Dumbbell, Plus, Trash2, Check } from "lucide-react";
 import { PageHeader } from "@/components/layout/page-header";
@@ -19,12 +19,35 @@ const MEALS_TEMPLATE: {
 
 const WORKOUT_PLAN: { day: string; name: string; exercises: string[] }[] = [];
 
+const MEASUREMENTS_KEY = "saude-measurements";
+
+function loadMeasurements(): typeof BODY_MEASUREMENTS {
+  if (typeof window === "undefined") return BODY_MEASUREMENTS;
+  try {
+    const saved = localStorage.getItem(MEASUREMENTS_KEY);
+    return saved ? JSON.parse(saved) : BODY_MEASUREMENTS;
+  } catch {
+    return BODY_MEASUREMENTS;
+  }
+}
+
 // ── Corpo ──
 function CorpoTab() {
   const [measurements, setMeasurements] = useState(BODY_MEASUREMENTS);
   const [newWeight, setNewWeight] = useState("");
+  const [hydrated, setHydrated] = useState(false);
   const latest = measurements[measurements.length - 1];
   const first = measurements[0];
+
+  useEffect(() => {
+    setMeasurements(loadMeasurements());
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    localStorage.setItem(MEASUREMENTS_KEY, JSON.stringify(measurements));
+  }, [measurements, hydrated]);
 
   const addMeasurement = () => {
     const w = parseFloat(newWeight);
@@ -120,8 +143,29 @@ function CorpoTab() {
 }
 
 // ── Nutrição ──
+function checkedMealsKey() {
+  return `saude-checked-meals-${todayLocalISO()}`;
+}
+
 function NutricaoTab() {
   const [checkedMeals, setCheckedMeals] = useState<string[]>([]);
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(checkedMealsKey());
+      setCheckedMeals(saved ? JSON.parse(saved) : []);
+    } catch {
+      setCheckedMeals([]);
+    }
+    setHydrated(true);
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated) return;
+    localStorage.setItem(checkedMealsKey(), JSON.stringify(checkedMeals));
+  }, [checkedMeals, hydrated]);
+
   const toggle = (id: string) =>
     setCheckedMeals((prev) => prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]);
 

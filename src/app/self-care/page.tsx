@@ -10,6 +10,8 @@ import { loadSkincareSteps, toggleSkincareStep } from "@/lib/skincare-store";
 import { todayLocalISO } from "@/lib/date-utils";
 
 const WEEKLY_CARE_KEY = "self-care-weekly";
+const MOOD_LOG_KEY = "self-care-mood-log";
+const GRATITUDE_KEY = "self-care-gratitude";
 
 const MOOD_LABELS: Record<number, { label: string; emoji: string; color: string }> = {
   1: { label: "Mal", emoji: "😞", color: "var(--danger)" },
@@ -43,6 +45,14 @@ export default function SelfCarePage() {
       const saved = localStorage.getItem(WEEKLY_CARE_KEY);
       if (saved) setWeekly(JSON.parse(saved));
     } catch { /* ignore */ }
+    try {
+      const savedMood = localStorage.getItem(MOOD_LOG_KEY);
+      if (savedMood) setMoodLog(JSON.parse(savedMood));
+    } catch { /* ignore */ }
+    try {
+      const savedGratitude = localStorage.getItem(GRATITUDE_KEY);
+      if (savedGratitude) setGratitude(JSON.parse(savedGratitude));
+    } catch { /* ignore */ }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -64,10 +74,11 @@ export default function SelfCarePage() {
   const setTodayMood = (mood: 1 | 2 | 3 | 4 | 5) => {
     setMoodLog((prev) => {
       const last = prev[prev.length - 1];
-      if (last?.date === today) {
-        return [...prev.slice(0, -1), { ...last, mood }];
-      }
-      return [...prev, { date: today, mood }];
+      const next = last?.date === today
+        ? [...prev.slice(0, -1), { ...last, mood }]
+        : [...prev, { date: today, mood }];
+      localStorage.setItem(MOOD_LOG_KEY, JSON.stringify(next));
+      return next;
     });
   };
 
@@ -75,12 +86,11 @@ export default function SelfCarePage() {
     if (!newGratitude.trim()) return;
     setGratitude((prev) => {
       const entry = prev.find((e) => e.date === today);
-      if (entry) {
-        return prev.map((e) =>
-          e.date === today ? { ...e, items: [...e.items, newGratitude.trim()] } : e
-        );
-      }
-      return [{ date: today, items: [newGratitude.trim()] }, ...prev];
+      const next = entry
+        ? prev.map((e) => e.date === today ? { ...e, items: [...e.items, newGratitude.trim()] } : e)
+        : [{ date: today, items: [newGratitude.trim()] }, ...prev];
+      localStorage.setItem(GRATITUDE_KEY, JSON.stringify(next));
+      return next;
     });
     setNewGratitude("");
     setAddingGratitude(false);

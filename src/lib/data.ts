@@ -639,10 +639,13 @@ export const RECURRING_EXPENSES: RecurringExpense[] = [
   { id: "re-internet", name: "Internet", value: 220, frequency: "Mensal", category: "Contas de casa", nextDue: "2026-08-05", paid: false, color: "var(--c-cyan)", emoji: "📶" },
 
   // Alimentação
-  { id: "re-alimentacao-casa", name: "Alimentação (casa)", value: 100, frequency: "Mensal", category: "Alimentação", nextDue: "2026-08-05", paid: false, color: "var(--c-green)", emoji: "🍽️" },
+  { id: "re-alimentacao-casa", name: "Alimentação (casa)", value: 2000, frequency: "Mensal", category: "Alimentação", nextDue: "2026-08-05", paid: false, color: "var(--c-green)", emoji: "🍽️" },
 
   // Transporte
   { id: "re-van", name: "Van", value: 310, frequency: "Mensal", category: "Transporte", nextDue: "2026-08-05", paid: false, color: "var(--text-muted)", emoji: "🚐" },
+
+  // Empréstimo
+  { id: "re-emprestimo", name: "Empréstimo", value: 600, frequency: "Mensal", category: "Empréstimo", nextDue: "2026-08-05", paid: false, color: "var(--c-rose)", emoji: "🏦" },
 
   // Assinaturas
   { id: "re-discord", name: "Discord", value: 26, frequency: "Mensal", category: "Assinaturas", nextDue: "2026-08-05", paid: false, color: "var(--secondary)", emoji: "🎮" },
@@ -678,17 +681,18 @@ export type BudgetCategory = {
   color: string;
 };
 
-// Baseado nos gastos fixos mensais do caderno, com categorias normais de gasto (total R$6.721)
+// Baseado nos gastos fixos mensais do caderno, com categorias normais de gasto (total R$9.221)
 export const BUDGET_CATEGORIES: BudgetCategory[] = [
-  { id: "bc-cartao", name: "Cartão de crédito", emoji: "💳", percentage: 30, spent: 2000, color: "var(--c-rose)" },
-  { id: "bc-estudos", name: "Estudos", emoji: "🏫", percentage: 33, spent: 2200, color: "var(--secondary)" },
-  { id: "bc-casa", name: "Contas de casa", emoji: "🏠", percentage: 10, spent: 670, color: "var(--c-blue)" },
-  { id: "bc-salao", name: "Salão / Trabalho", emoji: "💇‍♀️", percentage: 9, spent: 600, color: "var(--c-lilac)" },
-  { id: "bc-transporte", name: "Transporte", emoji: "🚐", percentage: 5, spent: 310, color: "var(--text-muted)" },
-  { id: "bc-lazer", name: "Lazer & Compras", emoji: "🛍️", percentage: 5, spent: 330, color: "var(--c-amber)" },
-  { id: "bc-assinaturas", name: "Assinaturas", emoji: "📱", percentage: 4, spent: 261, color: "var(--accent)" },
-  { id: "bc-trabalho", name: "Trabalho", emoji: "📊", percentage: 4, spent: 250, color: "var(--c-amber)" },
-  { id: "bc-alimentacao", name: "Alimentação", emoji: "🍽️", percentage: 1, spent: 100, color: "var(--c-green)" },
+  { id: "bc-estudos", name: "Estudos", emoji: "🏫", percentage: 24, spent: 2200, color: "var(--secondary)" },
+  { id: "bc-cartao", name: "Cartão de crédito", emoji: "💳", percentage: 21, spent: 2000, color: "var(--c-rose)" },
+  { id: "bc-alimentacao", name: "Alimentação", emoji: "🍽️", percentage: 21, spent: 2000, color: "var(--c-green)" },
+  { id: "bc-casa", name: "Contas de casa", emoji: "🏠", percentage: 7, spent: 670, color: "var(--c-blue)" },
+  { id: "bc-salao", name: "Salão / Trabalho", emoji: "💇‍♀️", percentage: 7, spent: 600, color: "var(--c-lilac)" },
+  { id: "bc-emprestimo", name: "Empréstimo", emoji: "🏦", percentage: 7, spent: 600, color: "var(--danger)" },
+  { id: "bc-lazer", name: "Lazer & Compras", emoji: "🛍️", percentage: 4, spent: 330, color: "var(--c-amber)" },
+  { id: "bc-transporte", name: "Transporte", emoji: "🚐", percentage: 3, spent: 310, color: "var(--text-muted)" },
+  { id: "bc-assinaturas", name: "Assinaturas", emoji: "📱", percentage: 3, spent: 261, color: "var(--accent)" },
+  { id: "bc-trabalho", name: "Trabalho", emoji: "📊", percentage: 3, spent: 250, color: "var(--c-amber)" },
 ];
 
 // ---- Trabalho ----
