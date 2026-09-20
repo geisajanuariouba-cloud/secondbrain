@@ -9,7 +9,7 @@
 
 import { createClient } from "@/lib/supabase/client";
 
-const SKIP_KEYS = new Set(["__sb_migrated__", "__cloud_sync_done__"]);
+const SKIP_KEYS = new Set(["__sb_migrated_v2__", "__cloud_sync_done__"]);
 
 function toStorageValue(value: unknown): string {
   return typeof value === "string" ? value : JSON.stringify(value);

@@ -56,13 +56,13 @@ export async function migrateLocalStorageToSupabase(): Promise<void> {
   const userId = await getUserId();
   if (!userId) return;
 
-  const migrated = localStorage.getItem("__sb_migrated__");
+  const migrated = localStorage.getItem("__sb_migrated_v2__");
   if (migrated) return;
 
   const entries: { user_id: string; key: string; value: unknown; updated_at: string }[] = [];
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
-    if (!key || key === "__sb_migrated__") continue;
+    if (!key || key === "__sb_migrated_v2__") continue;
     const raw = localStorage.getItem(key)!;
     let jsonValue: unknown;
     try { jsonValue = JSON.parse(raw); } catch { jsonValue = raw; }
@@ -74,5 +74,5 @@ export async function migrateLocalStorageToSupabase(): Promise<void> {
     await supabase.from("user_data").upsert(entries, { onConflict: "user_id,key", ignoreDuplicates: true });
   }
 
-  localStorage.setItem("__sb_migrated__", "1");
+  localStorage.setItem("__sb_migrated_v2__", "1");
 }
