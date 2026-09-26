@@ -411,8 +411,9 @@ export const VESTIBULARES_TARGETS: VestibularTarget[] = [
   {
     id: "pases-ufv", name: "PASES", fullName: "Programa de Avaliação Seriada para Ingresso na UFV",
     university: ["UFV"],
-    // CONFIRMADO (Edital nº 1 – PASES 1/UFV, triênio 2025-2027): Etapa 1 aplicada em 30/11/2025.
-    // Para o triênio seguinte (2026-2028, aplicável à Livia), datas ainda não publicadas — estimativa por padrão (fim de novembro)
+    // CONFIRMADO (Edital nº 1 – PASES 1/UFV, triênio 2026-2028, aplicável à Livia): inscrições
+    // abertas 12/08/2026 (16h) a 15/10/2026 (16h), prova em 29/11/2026 — organizado pelo
+    // Instituto Consulplan (não mais Cebraspe, que organizava o triênio anterior 2025-2027).
     date: "2026-11-29", color: "#16a34a",
     medicineAvg: 86, medicineCutNote: "Processo seriado — 3 etapas (Cebraspe) · Prova única de 50 questões: Linguagens 14, C.Humanas 12, Matemática 12, C.Natureza 12 · Etapa 3 = nota do ENEM (sem prova própria) · Peso final: Etapa1 25% + Etapa2 35% + Etapa3 40%",
     phases: 3, selected: true, type: "Seriado",
@@ -425,8 +426,10 @@ export const VESTIBULARES_TARGETS: VestibularTarget[] = [
       [...ALL_SUBJECTS],
     ],
     phaseContents: [PASES_MOD1, PASES_MOD2, PASES_MOD3],
-    registrationNote: "Inscrições ainda não abertas — edital do triênio 2026-2028 ainda não publicado.",
-    registrationUrl: "https://www.cebraspe.org.br/concursos/pases_1_ufv_25_27",
+    registrationOpensAt: "2026-08-12",
+    registrationClosesAt: "2026-10-15",
+    registrationNote: "Inscrições ABERTAS de 12/08/2026 (16h) a 15/10/2026 (16h) — Edital nº 1 PASES 1/UFV, triênio 2026-2028. Taxa R$78. Prova em 29/11/2026. Organizado pelo Instituto Consulplan (institutoconsulplan.org.br/pases2026), não mais pelo Cebraspe.",
+    registrationUrl: "https://www.institutoconsulplan.org.br/pases2026",
   },
   {
     id: "psas-ufmg", name: "Seriado UFMG", fullName: "Seriado UFMG — Processo Seletivo de Avaliação Seriada",
