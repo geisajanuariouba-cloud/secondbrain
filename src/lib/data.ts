@@ -449,10 +449,12 @@ export const VESTIBULARES_TARGETS: VestibularTarget[] = [
     ],
     phaseContents: [PSAS_MOD1, PSAS_MOD2, PSAS_MOD3],
     // CONFIRMADO — Edital nº 1183/2026 (UFMG): Etapa 1 do ciclo 2026-2028 teve inscrições
-    // de 15/06 a 22/07/2026 — JÁ ENCERRADAS. Prova em 12-13/12/2026. Confira se já se inscreveu.
+    // de 15/06 a 22/07/2026, prazo PRORROGADO até 14/08/2026 (17h) por retificação assinada
+    // em 21/07/2026 pelo reitor Alessandro Fernandes Moreira — JÁ ENCERRADAS. Prova em
+    // 12-13/12/2026 (13/12 = Etapa 1 do ciclo 2026-2028). Confira se já se inscreveu.
     registrationOpensAt: "2026-06-15",
-    registrationClosesAt: "2026-07-22",
-    registrationNote: "Inscrições da Etapa 1 (ciclo 2026-2028) já ENCERRADAS — foram de 15/06 a 22/07/2026, edital 1183/2026 (Copeve/UFMG). Confira se já se inscreveu!",
+    registrationClosesAt: "2026-08-14",
+    registrationNote: "Inscrições da Etapa 1 (ciclo 2026-2028) já ENCERRADAS — prazo original 15/06 a 22/07/2026 foi PRORROGADO até 14/08/2026 (17h), retificação do edital 1183/2026 assinada em 21/07 pelo reitor da UFMG. Confira se já se inscreveu!",
     registrationUrl: "https://www.ufmg.br/seriadoufmg/",
   },
   {
